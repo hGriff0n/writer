@@ -33,6 +33,7 @@ model = init_chat_model(
 # Prose quality and natural paragraphing are ALWAYS more important than hitting a specific paragraph count.
 
 # Helpers for loading data from prompt and story files
+# TODO: me - move this to a common library
 # TODO: me - Not sure if this is the best approach for initial development
 def load_prompt(config, prompt: str) -> str:
     with open(f'./{config['prompt-dir']}/{prompt}.md', 'r') as f:

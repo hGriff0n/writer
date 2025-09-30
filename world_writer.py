@@ -1,29 +1,17 @@
-import os
-import yaml
 
-from langchain.chat_models import init_chat_model
+from lib.ai import init_model
+from lib.config import load_config
+
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 
-with open('./data/config.yaml', 'r') as f:
-    config = yaml.safe_load(f)
-
-# MODEL_CHOICE = 'openai'
-MODEL_CHOICE = 'gemini'
-llm_config = config['ai-providers'][MODEL_CHOICE]
-os.environ[llm_config['api-key']['name']] = llm_config['api-key']['value']
-
-model = init_chat_model(llm_config['name'], model_provider=llm_config.get('provider'))
+# Initialize chat app
+config = load_config()
+model = init_model(config, 'gemini') # 'openai'
 # https://www.philschmid.de/gemini-langchain-cheatsheet#google-gemini-with-langchain-chat-models
 
 # https://langchain-ai.github.io/langgraph/tutorials/get-started/1-build-basic-chatbot/
 # https://python.langchain.com/docs/introduction/
 
-
-# Helpers for loading data from prompt and story files
-# TODO: me - move this to a common library
-def load_prompt(config, prompt: str) -> str:
-    with open(f'./{config['prompt-dir']}/{prompt}.md', 'r') as f:
-        return f.read()
 
 #
 # Setup writer sub-agents
@@ -40,11 +28,11 @@ def load_prompt(config, prompt: str) -> str:
 # librarian is specifically instructed to never answer a question unless it
 # knows the answer, although there is a separate mode for extrapolations.
 # 
-WORLD_GENERATOR_PROMPT = load_prompt(config, 'world_generator')
+WORLD_GENERATOR_PROMPT = config.load_prompt_file('world_generator')
 
 # NOTE: There is no way for me to update the world state from this situation
 # https://langchain-ai.github.io/langgraph/agents/context/ would be useful here
-WORLD_LIBRARIAN_PROMPT = load_prompt(config, 'world_librarian')
+WORLD_LIBRARIAN_PROMPT = config.load_prompt_file('world_librarian')
 
 # 
 # Although not currently used in this script, the plot generator was the
@@ -72,7 +60,7 @@ WORLD_LIBRARIAN_PROMPT = load_prompt(config, 'world_librarian')
 # resumed eventually, as the agent organization I've developed so far is
 # well placed in the long run.
 # 
-PLOT_GENERATOR = load_prompt(config, 'plot_generator')
+PLOT_GENERATOR = config.load_prompt_file('plot_generator')
 
 # 
 # Send the initial generation request

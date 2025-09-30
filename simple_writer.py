@@ -1,28 +1,17 @@
 
-import json
-import os
-import re
-import yaml
+from typing import List, Optional
 
-from langchain.chat_models import init_chat_model
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from lib.ai import init_model, ChatLog
+from lib.config import load_config
+from lib.util import extract_between_tags
+
+from langchain_core.messages import AnyMessage, HumanMessage, SystemMessage
 
 
-# 
-# Load config file
-#
-with open('./data/config.yaml', 'r') as f:
-    config = yaml.safe_load(f)
+# Initialize chat app
+config = load_config()
+model = init_model(config, 'gemini')
 
-#
-# Initialize AI Model
-#
-MODEL_CHOICE = 'gemini'
-llm_config = config['ai-providers'][MODEL_CHOICE]
-os.environ[llm_config['api-key']['name']] = llm_config['api-key']['value']
-
-model = init_chat_model(
-    llm_config['name'], model_provider=llm_config.get('provider'))
 # https://www.philschmid.de/gemini-langchain-cheatsheet#google-gemini-with-langchain-chat-models
 
 # https://langchain-ai.github.io/langgraph/tutorials/get-started/1-build-basic-chatbot/
@@ -32,26 +21,8 @@ model = init_chat_model(
 # If length is an issue
 # Prose quality and natural paragraphing are ALWAYS more important than hitting a specific paragraph count.
 
-# Helpers for loading data from prompt and story files
-# TODO: me - move this to a common library
-# TODO: me - Not sure if this is the best approach for initial development
-def load_prompt(config, prompt: str) -> str:
-    with open(f'./{config['prompt-dir']}/{prompt}.md', 'r') as f:
-        return f.read()
-    
-# TODO: me - stories should probably come with their own yaml file
-def load_story_file(config, story: str, file: str) -> str:
-    with open(f'./{config['story-dir']}/{story}/{file}.md', 'r') as f:
-        return f.read()
-
 STORY = 'reality'
-WRITER_PROMPT = load_prompt(config, 'simple_writer')
-
-
-chat_log = {
-    'template': WRITER_PROMPT,
-    'conversation': []
-}
+WRITER_PROMPT = config.load_prompt_file('simple_writer')
 
 #
 # Wrapper for sending a message to the llm
@@ -59,13 +30,15 @@ chat_log = {
 # Also automatically records a history of all chat communications to a log file
 # so that I can easily upload these to an analysis prompt that can identify was
 # of improving the initial prompt (based on the corrections I had to make)
-# TODO: me - Add typings
+# 
 # This automatically truncates the provided context to the last response
 # from the model.
 # TODO: me - The truncation works for now, because the story concept
 # I'm testing is episodic and doesn't need more history
 #
-def send_message(content, context):
+def send_message(message: str,
+                 context: List[AnyMessage],
+                 chat_log: Optional[ChatLog] = None) -> str:
     if context is None:
         raise Exception("Context must be specified")
 
@@ -75,29 +48,24 @@ def send_message(content, context):
     if context:
         input.append(SystemMessage(f'<story_so_far>{context[-1].content}</story_so_far'))
     context.clear()
-    context.extend(input + [HumanMessage(content=content)])
+    context.extend(input + [HumanMessage(content=message)])
 
     # Call the llm and record the request in the chat-log
     context.append(model.invoke(input=context))
-    chat_log['conversation'].extend([
-        {'role': 'ME', 'msg': content},
-        {'role': 'AI', 'msg': context[-1].content}
-    ])
+    if chat_log is not None:
+        chat_log.conversation.extend([
+            {'role': 'ME', 'msg': message},
+            {'role': 'AI', 'msg': context[-1].content}
+        ])
     return context[-1].content
-
-# Helper to extract xml encoded text sections
-# This is useful because llms prefer xml for referential data for some reason
-def extract_between_tags(tag, text):
-    m = re.match(f"<{tag}>((?:.|[\r\n])*)</{tag}>", text)
-    return m and m.group(1) or ""
 
 # 
 # Simple helper for introducing some ai help with next direction
 # Eventually, this'll become a full-fledged GM system
 # 
 BIBLE_TAGS = 'story_bible'
-choice_generation_prompt = load_story_file(config, STORY, 'choices')
-def ask_for_ideas(context):
+choice_generation_prompt = config.load_story_file(STORY, 'choices')
+def ask_for_ideas(context: List[AnyMessage]):
     if not context:
         return "Cannot provide ideas with no context"
 
@@ -110,17 +78,19 @@ def ask_for_ideas(context):
 
 # 
 # Preparing initial story context
-# TODO: me - Add error handling when this is abstracted
+# TODO: me - Add error handling when file doesn't exist
+# I'm not sure what that would be
 # 
-scene = load_story_file(config, STORY, 'start')
-constraints = load_story_file(config, STORY, 'constraints')
-initial_story_bible = f'<{BIBLE_TAGS}>{load_story_file(config, STORY, 'lorebook')}</{BIBLE_TAGS}>'
+scene = config.load_story_file(STORY, 'start')
+constraints = config.load_story_file(STORY, 'constraints')
+initial_story_bible = f'<{BIBLE_TAGS}>{config.load_story_file(STORY, 'lorebook')}</{BIBLE_TAGS}>'
 
 
 # 
 # Start the writing by sending the initial, context-less, direction
 # 
-context = []
+chat_log = ChatLog()
+context: List[AnyMessage] = []
 response = send_message(
     f'Plot Direction: {scene}\n{constraints}\n{initial_story_bible}', context
 )
@@ -154,5 +124,4 @@ while True:
 
 
 # TODO: me - Generate filename based on conversation to simplify loading
-with open(f'./{config['output-dir']}/data.json', 'a', encoding='utf-8') as f:
-    json.dump(chat_log, f, ensure_ascii=False, indent=4)
+chat_log.save(config.output_dir)

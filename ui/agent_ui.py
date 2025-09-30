@@ -1,11 +1,8 @@
 
 from dataclasses import dataclass
-from typing import Literal
-import os
-import yaml
 
-from langchain.chat_models import init_chat_model
-from langgraph.types import Command
+from lib.config import init_model
+from lib.config import load_config
 
 from rich.console import RenderableType
 from rich.markdown import Markdown
@@ -20,21 +17,9 @@ from textual.widget import Widget
 from textual.widgets import Footer, Input, OptionList, Placeholder, TextArea
 
 
-# 
-# Load config file
-#
-with open('../data/config.yaml', 'r') as f:
-    config = yaml.safe_load(f)
-
-#
-# Initialize AI Model
-#
-MODEL_CHOICE = 'gemini'
-llm_config = config['ai-providers'][MODEL_CHOICE]
-os.environ[llm_config['api-key']['name']] = llm_config['api-key']['value']
-
-model = init_chat_model(
-    llm_config['name'], model_provider=llm_config.get('provider'))
+# Initialize chat app
+config = load_config()
+model = init_model(config, 'gemini')
 
 
 # Chat interface

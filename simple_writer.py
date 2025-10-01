@@ -24,6 +24,23 @@ model = init_model(config, 'gemini')
 STORY = 'reality'
 WRITER_PROMPT = config.load_prompt_file('simple_writer')
 
+
+#
+# Track token usage so I can estimate cost of paid tiers
+# TODO: me - Can't estimate until I include costs in llm config
+# 
+token_stats = {'input': 0, 'output': 0, 'prompts_over_200k': 0}
+def update_metadata_stats(response: AnyMessage):
+    response = context[-1]
+    if not response.response_metadata:
+        return
+    m = response.response_metadata['usage_metadata']
+    token_stats['input'] += m['input_tokens']
+    token_stats['output'] += m['output_tokens']
+    if m['output_tokens'] >= 200000:
+        token_stats['prompts_over_200k'] += 1
+
+
 #
 # Wrapper for sending a message to the llm
 #
@@ -52,6 +69,7 @@ def send_message(message: str,
 
     # Call the llm and record the request in the chat-log
     context.append(model.invoke(input=context))
+    update_metadata_stats(context[-1])
     if chat_log is not None:
         chat_log.conversation.extend([
             {'role': 'ME', 'msg': message},
@@ -74,7 +92,9 @@ def ask_for_ideas(context: List[AnyMessage]):
         SystemMessage(content=choice_generation_prompt),
         HumanMessage(content=bible)
     ])
+    update_metadata_stats(response)
     return response.content
+
 
 # 
 # Preparing initial story context
@@ -124,4 +144,5 @@ while True:
 
 
 # TODO: me - Generate filename based on conversation to simplify loading
+print(f'LLM Usage: {token_stats}')
 chat_log.save(config.output_dir)

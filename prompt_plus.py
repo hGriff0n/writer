@@ -1,10 +1,8 @@
 
-import json
-
 from lib.ai import init_model, load_chat_log
 from lib.config import load_config
 
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 
 
 # Initialize chat app

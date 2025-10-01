@@ -4,7 +4,7 @@ import json
 import os
 from typing import Dict, List, Union
 
-from config import Config
+from .config import Config
 
 from langchain.chat_models import base, init_chat_model
 from langchain_core.messages import AnyMessage, HumanMessage, SystemMessage

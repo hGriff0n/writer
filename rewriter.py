@@ -10,27 +10,18 @@ config = load_config()
 model = init_model(config, 'gemini')
 
 
-REWRITER_PROMPT = config.load_prompt_file('rewriter')
+REWRITER_PROMPT = config.load_prompt_file('expander')
 with open(f'{config.output_dir}/stories.json', 'r', encoding='utf-8') as f:
     story = json.load(f)['1']
 
 title = 'reality'
-text_to_analyze = f'<SourceText>{story[0]}\n\n{story[1]}</SourceText>'
-
-# not sure how to take things from here
-# the rewriter approach isn't working for now
-# 
-narrative_context = """
-<MetaRules>
-</MetaRules>
-"""
+text_to_analyze = f'<prose>{story[0]}</prose>'
 
 
-prompt = input("> ")
+prompt = input("How to expand the scene> ")
 response = model.invoke(input=[
     SystemMessage(content=REWRITER_PROMPT),
     SystemMessage(content=text_to_analyze),
-    SystemMessage(content=narrative_context),
     HumanMessage(content=prompt)
 ])
 

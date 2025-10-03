@@ -1,5 +1,6 @@
 
 from argparse import ArgumentParser
+import json
 from typing import List
 
 from lib.ai import LlmEngine
@@ -16,7 +17,7 @@ parser.add_argument('-m','--model',
                     default=LlmEngine.DEFAULT_MODEL)
 parser.add_argument('-p','--prompt',
                     choices=['simple_writer'], default='simple_writer')
-# TODO: me - add an ability to load a story through argparse
+parser.add_argument('-c', '--resume', action='store_true')
 parser.add_argument('-c','--continue', action='store_true')
 
 
@@ -96,16 +97,27 @@ def ask_for_ideas(context: List[AnyMessage]):
 # TODO: me - Add an option to continue a story
 # 
 scene = config.load_story_file(args.story, 'start')
-constraints = config.load_story_file(args.story, 'constraints')
-initial_story_bible = f'<{BIBLE_TAGS}>{config.load_story_file(args.story, 'lorebook')}</{BIBLE_TAGS}>'
-
-
-# 
-# Start the writing by sending the initial, context-less, direction
-# 
 context: List[AnyMessage] = []
+constraints = config.load_story_file(args.story, 'constraints')
+if args.resume:
+    print("Loading in-progress story...")
+    file = f'{config.directories.story}/{args.story}/tmp.json'
+    with open(file, 'r', encoding='utf-8') as f:
+        story = json.load(f)
+    
+    print("Restoring prior context...")
+    model.chat_log.conversation.extend({"role": "AI", "msg": chap} for chap in story['chapters'])
+    context = [AIMessage(content=model.chat_log.conversation[-1]['msg'])]
+
+    print(f"Loaded previous story from {file}")
+
+else:
+    # Otherwise we're starting a new story, so simply load up the default
+    # start command and start writing automatically.
+    scene = config.load_story_file(args.story, 'start')
+    initial_story_bible = config.load_story_file(args.story, 'lorebook')
 response = send_message(
-    f'Plot Direction: {scene}\n{constraints}\n{initial_story_bible}', context
+        f'Plot Direction: {scene}\n{constraints}\n<story_bible>{initial_story_bible}</story_bible>', context
 )
 print(response)
 
@@ -126,13 +138,24 @@ while True:
     if prompt in ["help", "/help"]:
         print(ask_for_ideas(context))
         continue
+    if prompt in ["whereami", "/context"]:
+        print(context[-1].content)
+        continue
 
     # Need a better way to continue on from the previous location
-    scene = f"Plot Direction: \"{prompt}\""
-    response = send_message(f'{scene}\n{constraints}', context)
+    response = send_message(
+        f'Plot Direction: "{prompt}"\n{constraints}', context)
     print(response)
 
-# TODO: me - Generate filename based on conversation to simplify loading
-# Bu what information would I record
+# Store the conversation in a per-run file so we can easily send it to
+# other prompts for improvements/etc.
 print(f'Cost of Run: {model.est_cost()}')
-model.chat_log.save(config.output_dir)
+chat_file = model.chat_log.save(config.output_dir)
+
+# TODO: me - What does this do that's not already in the chat log?
+# Aside from saving in the same location as the story files ???
+# Save the current state of generation in a temp file in the story directory
+# This is to enable continuations through the --resume flag
+story = [response for response in model.chat_log.having_role('AI')]
+with open(f'./{config.directories.story}/{args.story}/tmp.json', 'w', encoding='utf-8') as f:
+    json.dump({ 'chapters': story, 'chat_log': chat_file }, f, ensure_ascii=False, indent=4)

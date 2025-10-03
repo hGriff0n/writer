@@ -4,34 +4,35 @@ import json
 from typing import List
 
 from lib.ai import LlmEngine
-from lib.config import load_config
-from lib.util import extract_between_tags
+from lib.config import load_config, DataConstants
 
-from langchain_core.messages import AnyMessage, HumanMessage, SystemMessage
+from langchain_core.messages import AnyMessage, AIMessage, SystemMessage
 
 
+DEFS = DataConstants()
+
+# TODO: me - Rearchitect these arguments so that they are fully customizable
 parser = ArgumentParser(prog='simple_writer', description='simple ai writer')
 parser.add_argument('story')
-parser.add_argument('-m','--model',
+parser.add_argument('-m', '--profile',
                     choices=LlmEngine.supported_models(),
                     default=LlmEngine.DEFAULT_MODEL)
-parser.add_argument('-p','--prompt',
+parser.add_argument('-p', '--prompt',
                     choices=['simple_writer'], default='simple_writer')
 parser.add_argument('-c', '--resume', action='store_true')
-parser.add_argument('-c','--continue', action='store_true')
 
 
 # Initialize chat app
 args = parser.parse_args()
-config = load_config()
-model = LlmEngine(config, args.model, args.prompt)
+config = load_config(DEFS)
+model = LlmEngine(config, args.profile, args.prompt)
 
 # https://www.philschmid.de/gemini-langchain-cheatsheet#google-gemini-with-langchain-chat-models
 
 # https://langchain-ai.github.io/langgraph/tutorials/get-started/1-build-basic-chatbot/
 # https://python.langchain.com/docs/introduction/
 
-### Input Specification
+# Input Specification
 # If length is an issue
 # Prose quality and natural paragraphing are ALWAYS more important than hitting a specific paragraph count.
 
@@ -42,7 +43,7 @@ model = LlmEngine(config, args.model, args.prompt)
 # Also automatically records a history of all chat communications to a log file
 # so that I can easily upload these to an analysis prompt that can identify was
 # of improving the initial prompt (based on the corrections I had to make)
-# 
+#
 # This automatically truncates the provided context to the last response
 # from the model.
 # TODO: me - The truncation works for now, because the story concept
@@ -57,46 +58,45 @@ def send_message(message: str,
     # TODO: me - Eventually use more memory channels
     input = [SystemMessage(content=model.prompt)]
     if context:
-        input.append(SystemMessage(f'<story_so_far>{context[-1].content}</story_so_far'))
+        input.append(SystemMessage(
+            f'<story_so_far>{context[-1].content}</story_so_far'))
     context.clear()
     context.extend(input)
 
     # Call the llm and record the request in the chat-log
     return model.invoke(message, context)
 
-# 
+
+#
 # Simple helper for introducing some ai help with next direction
 # Eventually, this'll become a full-fledged GM system
-# 
-BIBLE_TAGS = 'story_bible'
-choice_generation_prompt = config.load_story_file(args.story, 'choices')
+#
+CHOICE_PROMPT = config.load_story_file(args.story, 'choices')
 def ask_for_ideas(context: List[AnyMessage]):
-    if not context:
-        return "Cannot provide ideas with no context"
-
-    response = model.llm.invoke(input=[
-        SystemMessage(content=choice_generation_prompt),
-        HumanMessage(content=context[-1].content)
-    ])
-    model.usage_stats.append(response.usage_metadata)
-    return response.content
+    return model.ask_for_help(CHOICE_PROMPT, context)
 
 
 # The way this will transform to multi-agent up to here is somewhat obvious
 # The world generator and librarian agents, plus maybe a story planner, work
 # together to develop the input to this prompt stage
-# 
+#
 # But where things go after that is unknown. This approach is good for
 # episodic stories, potentially for RPG systems, but not full novels
 
-# 
+#
 # Preparing initial story context
 # TODO: me - Add error handling when file doesn't exist
 # I'm not sure what that would be
-# 
-# TODO: me - Add an option to continue a story
-# 
-scene = config.load_story_file(args.story, 'start')
+#
+# TODO: me - Need to start formalizing this project (1)
+#  - With release of velopitt alpha, I can backlog that
+#  - Mostly because I'm not sure on next steps
+#    a. Formalizing world building procedure into specific prompt
+#    b. Developing RAG and context management modules
+#    c. Critique/Improver Agent
+#    d. Expansion/Rewriter Agent
+#    e. Improving quality of "next options"
+#
 context: List[AnyMessage] = []
 constraints = config.load_story_file(args.story, 'constraints')
 if args.resume:
@@ -116,19 +116,19 @@ else:
     # start command and start writing automatically.
     scene = config.load_story_file(args.story, 'start')
     initial_story_bible = config.load_story_file(args.story, 'lorebook')
-response = send_message(
+    response = send_message(
         f'Plot Direction: {scene}\n{constraints}\n<story_bible>{initial_story_bible}</story_bible>', context
-)
-print(response)
+    )
+    print(response)
 
 
 #
 # Keep writing until you want to stop
-# 
+#
 # At the moment, there are two "commands":
 #   - exit, /finish: stop the loop
 #   - help, /help: request ai help for generating next actions
-# 
+#
 # All other input is sent directly to the model as the 'Plot Direction'
 # along with the story constraints. History is provided through context
 while True:

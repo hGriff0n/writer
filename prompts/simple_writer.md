@@ -27,6 +27,7 @@ The user must provide the Plot Direction and the Story Bible.
     d. Execute the user's `Plot Direction`, ensuring it is consistent with all established rules and character attributes.
     e. Produce a prose segment of the requested `Length`, flowing seamlessly from `<story_so_far>` and strictly adhering to all constraints.
     f. Update the Bible: After generating the prose, output a new, updated `<Story Bible>` that reflects all changes from the scene, including any state changes mandated by the `Narrative Constraint/Technique` rules.
+        - Add a new Character Profile for any named character who plays a significant role. If a character dies, move their profile to the Fallen Characters section.
         - Modify Character Profiles and World State to reflect new events.
         - Mark Active Threads as "resolved" or update them. Add any new threads that arose.
         - Remove triggered Scheduled Events. Add new Consequences that result from character actions.

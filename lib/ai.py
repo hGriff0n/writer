@@ -4,76 +4,89 @@ from datetime import datetime
 import json
 import os
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
-from .config import Config
+from .config import Config, DataConstants
 
 from langchain.chat_models import base, init_chat_model
-from langchain_core.messages import AnyMessage, BaseMessage, HumanMessage
+from langchain_core.messages import AnyMessage, HumanMessage, SystemMessage
+from langchain_core.messages.ai import UsageMetadata
 
 
 LlmModel = Union[base.BaseChatModel, base._ConfigurableModel]
 
 # TODO: migrate this to separate app?
 UNIT = 1_000_000
-__API_COSTS = {
-    'gemini': {
-        'surge': 200_000,
-        'input': 1.25 / UNIT,
-        'in_surge': 2.5 / UNIT,
-        'output': 10 / UNIT,
-        'out_surge': 15 / UNIT
-    }
-}
+
+@dataclass
+class CallCost:
+    input: float
+    output: float
+    threshold: Optional[int] = None
+    applies_when: Optional[str] = None
+
+    def normalize(self):
+        self.input = self.input / UNIT
+        self.output = self.output / UNIT
+
+    def _get_check(self):
+        if self.applies_when == "over":
+            return lambda x: x > self.threshold
+        if self.applies_when == "under":
+            return lambda x: x < self.threshold
+        return lambda _: True
+
+    def cost_of(self, call: UsageMetadata) -> float:
+        cost = 0
+        check = self._get_check()
+        if check(call['input_tokens']):
+            cost += call['input_tokens'] * self.input
+        if check(call['output_tokens']):
+            cost += call['output_tokens'] * self.output
+        return cost
 
 
-def _cost_of_request(model_name: str, usage_metadata):
-    api = __API_COSTS[model_name]
-    input = usage_metadata['input_tokens']
-    output = usage_metadata['output_tokens']
-    icost = input > api['surge'] and api['in_surge'] or api['input']
-    ocost = output > api['surge'] and api['out_surge'] or api['output']
-    return input * icost + output * ocost
+@dataclass
+class ApiCost:
+    standard: CallCost
+    surge: Optional[CallCost]
+    batch: Optional[bool]
+
+    def __init__(self, standard: Dict[str, any], surge: Optional[Dict[str, any]] = None, batch: bool = None):
+        self.standard = CallCost(**standard)
+        self.surge = surge and CallCost(**surge) or None
+        batch = batch
+
+    def normalize(self):
+        self.standard.normalize()
+        if self.surge:
+            self.surge.normalize()
+
+    def cost_of(self, call: UsageMetadata) -> float:
+        total_cost = 0
+        if self.surge:
+            total_cost += self.surge.cost_of(call)
+        return total_cost + self.standard.cost_of(call)
 
 
-"""
-GEMINI (2.5pro)
-unit = 1_000_000
-surge = 200_000
+@dataclass
+class UsageTracker:
+    usage: List[UsageMetadata]
+    costs: ApiCost
 
-input: 1.25
-input over surge: 2.5
-output: 10
-output over surge: 15
-"""
+    def __init__(self, model: str, defs: DataConstants):
+        vals = defs.get_config_for_model(model)
+        if not vals:
+            raise Exception(f'Attempt to load unsupported mode {model}')
+        self.usage = []
+        self.costs = ApiCost(**vals['costs'])
+        self.costs.normalize()
 
-"""
-OpenAI (gpt5)
-unit = 1_000_000
+    def compute_cost(self):
+        return sum(self.costs.cost_of(call) for call in self.usage)
 
-input: 1.25
-input cached: 0.125
-output: 10
-"""
-
-"""
-Anthropic (opus 4.1)
-unit = 1_000_000
-prompt caching?
-
-input: 15
-output: 75
-"""
-
-"""
-Mistral (magistral M)
-unit = 1_000_000
-
-input: 2
-output: 5
-"""
-
-# TODO: me - How to provide defaults
+    def append(self, usage: UsageMetadata):
+        self.usage.append(usage)
 
 
 @dataclass
@@ -86,14 +99,15 @@ class ChatLog:
         attempt = 0
         while p.exists():
             attempt += 1
-            p = Path(outdir, f'{date}{attempt}.json')
+            p = Path(outdir, f'{date}_{attempt}.json')
         return p
 
-    def save(self, outdir: str):
+    def save(self, outdir: str) -> str:
         date = datetime.now().strftime('%Y%m%d')
         file = self._find_file_name(outdir, date)
         file.write_text(
             json.dumps(asdict(self), ensure_ascii=False, indent=4))
+        return str(file.absolute())
 
     def having_role(self, role: str) -> List[str]:
         return map(lambda m: m['msg'],
@@ -107,8 +121,7 @@ def load_chat_log(dir: str, filename: str) -> ChatLog:
     return ChatLog(**json.loads(p.read_text()))
 
 
-def init_model(config: Config, model: str) -> LlmModel:
-    llm_config = config.ai_providers[model]
+def init_model(llm_config: Dict[str, any]) -> LlmModel:
     if (llm_config.get('api-key')):
         os.environ[llm_config['api-key']['name']
                    ] = llm_config['api-key']['value']
@@ -120,18 +133,31 @@ def init_model(config: Config, model: str) -> LlmModel:
 class LlmEngine:
 
     # TODO: me - This actually might be better to load from config
+    # Profiles actually
     @staticmethod
     def supported_models():
         return ['gemini', 'openai']
-    
+
     DEFAULT_MODEL = 'gemini'
 
     def __init__(self, config: Config, model: str, prompt_file: str):
+        # Resolve the selected model, allowing for model to actually indicate
+        # a profile which auto-includes specific model settings
         self._model_name = model
-        self._llm = init_model(config, model)
+        profile = config.ai_profiles.get(model)
+        if profile:
+            self._model_name = profile['model_name']
+        self._model_config = config.constants.get_config_for_model(
+            self._model_name)
+        if not self._model_config:
+            raise Exception(
+                f'Attempt to load unsupported mode: {self._model_name}')
+
+        # Setup the rest of the engine.
+        self._llm = init_model(self._model_config)
         self._prompt = config.load_prompt_file(prompt_file)
         self._log = ChatLog(template=self._prompt, conversation=[])
-        self._usage = []
+        self._usage = UsageTracker(self._model_name, config.constants)
 
     def _record_chat(self, message: str, response: str):
         self._log.conversation.extend([
@@ -152,10 +178,10 @@ class LlmEngine:
         return self._llm
 
     @property
-    def usage_stats(self):
+    def usage_stats(self) -> UsageTracker:
         return self._usage
 
-    def invoke(self, message: str, context: List[AnyMessage], *args, **kwargs) -> BaseMessage:
+    def invoke(self, message: str, context: List[AnyMessage], *args, **kwargs) -> str:
         context.append(HumanMessage(content=message))
         response = self._llm.invoke(input=context, *args, **kwargs)
         context.append(response)
@@ -164,4 +190,14 @@ class LlmEngine:
         return response.content
 
     def est_cost(self):
-        return sum(map(lambda m: _cost_of_request(self._model_name, m), self._usage))
+        return self._usage.compute_cost()
+
+    def ask_for_help(self, help_prompt: str, context: List[AnyMessage]) -> str:
+        if not context:
+            raise Exception("Asking for help requires a context to ask in")
+        response = self._llm.invoke(input=[
+            SystemMessage(content=help_prompt),
+            HumanMessage(content=context[-1].content)
+        ])
+        self._usage.append(response.usage_metadata)
+        return response.content

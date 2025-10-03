@@ -3,11 +3,11 @@ import os
 import re
 
 from lib.ai import load_chat_log
-from lib.config import load_config
+from lib.config import load_config, DataConstants
 from lib.util import extract_between_tags
 
 
-config = load_config()
+config = load_config(DataConstants())
 
 # Simple script to take the last conversation and merge it into a single narrative. Appends to a list of stories in stories.json and then overwrites the book.txt file.
 

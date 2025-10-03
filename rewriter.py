@@ -1,12 +1,12 @@
 
 import json
 
-from lib.ai import init_model, LlmEngine
-from lib.config import load_config
+from lib.ai import LlmEngine
+from lib.config import load_config, DataConstants
 
 from langchain_core.messages import AnyMessage, SystemMessage, HumanMessage
 
-config = load_config()
+config = load_config(DataConstants())
 model = LlmEngine(config, 'gemini', 'expander')
 
 with open(f'{config.output_dir}/stories.json', 'r', encoding='utf-8') as f:
@@ -30,3 +30,4 @@ while prompt != "exit":
     prompt = input("> ")
 
 model.chat_log.save(config.output_dir)
+print(f'Cost of Run: {model.est_cost()}')

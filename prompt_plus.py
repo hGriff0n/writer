@@ -1,12 +1,12 @@
 
 from lib.ai import LlmEngine, load_chat_log
-from lib.config import load_config
+from lib.config import load_config, DataConstants
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
 
 # Initialize chat app
-config = load_config()
+config = load_config(DataConstants())
 model = LlmEngine(config, 'gemini', 'feedback_analysis')
 
 # Load the chat file from the last conversation
@@ -24,3 +24,4 @@ conversation = '\n'.join(
 # TODO: me - this should probably be another chat app
 response = model.invoke(f'{chat_log.template}\n\n{conversation}', [])
 print(response.content)
+print(f'Cost of Run: {model.est_cost()}')

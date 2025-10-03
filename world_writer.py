@@ -1,11 +1,11 @@
 
 from lib.ai import init_model
-from lib.config import load_config
+from lib.config import load_config, DataConstants
 
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 
 # Initialize chat app
-config = load_config()
+config = load_config(DataConstants())
 model = init_model(config, 'gemini') # 'openai'
 # https://www.philschmid.de/gemini-langchain-cheatsheet#google-gemini-with-langchain-chat-models
 
@@ -92,3 +92,5 @@ while True:
         SystemMessage(content=librarian),
         HumanMessage(content=prompt)
     ]).content)
+
+print(f'Cost of Run: {model.est_cost()}')

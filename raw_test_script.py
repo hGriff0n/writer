@@ -1,5 +1,5 @@
 
-from lib.ai import init_model, load_chat_log
+from lib.ai import init_model
 from lib.config import load_config
 
 from langchain_core.messages import AnyMessage, HumanMessage
@@ -8,17 +8,6 @@ from langchain_core.messages import AnyMessage, HumanMessage
 # Track token usage so I can estimate cost of paid tiers
 # TODO: me - Can't estimate until I include costs in llm config
 # 
-token_stats = {'input': 0, 'output': 0, 'prompts_over_200k': 0}
-def update_metadata_stats(response: AnyMessage):
-    response = context[-1]
-    if not response.response_metadata:
-        return
-    m = response.response_metadata['usage_metadata']
-    token_stats['input'] += m['input_tokens']
-    token_stats['output'] += m['output_tokens']
-    if m['output_tokens'] >= 200000:
-        token_stats['prompts_over_200k'] += 1
-
 
 config = load_config()
 model = init_model(config, 'gemini')

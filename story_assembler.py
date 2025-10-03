@@ -15,7 +15,7 @@ config = load_config()
 # This is basically the opposite of 'prompt_plus', dropping all human msgs
 story = []
 word_count = 0
-chat_log = load_chat_log(config.output_dir)
+chat_log = load_chat_log(config.output_dir, 'data')
 for response in chat_log.having_role('AI'):
     story.append(extract_between_tags('prose', response['msg']))
     word_count += len(story[-1].split())

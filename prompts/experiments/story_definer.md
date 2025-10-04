@@ -6,3 +6,4 @@ PROMPT:
 HOOK:
 
 [[comments]]
+Potentially obviated by principles_generator + principles_to_context

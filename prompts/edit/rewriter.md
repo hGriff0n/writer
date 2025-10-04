@@ -61,3 +61,8 @@ Generate the rewritten text. Your output must adhere strictly to the configurati
 ```
 
 [[comments]]
+- Took a long time to re-establish the system "rules" and even then they weren't fully understood
+- The transitions between the old and new scenes weren't great, the intention for these was to blend smoothly
+- Didn't change the existing story at all, but that might've been necessary in order to transition better
+- Maybe could be a ploy for a transition engine or have the expander ensure it uses the space to transition nicely
+- Maybe worthwhile to have the initial writer explicitly annotate thinking and system events for later stages? Maybe even have that as the first stage?

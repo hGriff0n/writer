@@ -1,6 +1,7 @@
 
 from argparse import ArgumentParser
 import json
+import re
 from typing import List
 
 from lib.ai import LlmEngine
@@ -31,10 +32,6 @@ model = LlmEngine(config, args.profile, args.prompt)
 
 # https://langchain-ai.github.io/langgraph/tutorials/get-started/1-build-basic-chatbot/
 # https://python.langchain.com/docs/introduction/
-
-# Input Specification
-# If length is an issue
-# Prose quality and natural paragraphing are ALWAYS more important than hitting a specific paragraph count.
 
 
 #
@@ -67,6 +64,14 @@ def send_message(message: str,
     return model.invoke(message, context)
 
 
+# Probably a better way of doing this, but . not matching whitespace???
+def extract_tag(text, tag):
+    regex = f'(<{tag}>(?:(?!</{tag}).|[\r\n ])*</{tag}>)'
+    m = re.search(regex, text)
+    print(m.group(1))
+    return text.replace(m.group(1), ''), m.group(1)
+
+
 #
 # Simple helper for introducing some ai help with next direction
 # Eventually, this'll become a full-fledged GM system
@@ -87,35 +92,6 @@ def ask_for_ideas(context: List[AnyMessage]):
 # Preparing initial story context
 # TODO: me - Add error handling when file doesn't exist
 # I'm not sure what that would be
-#
-# https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
-# TODO: me - Need to start formalizing this project (1)
-#  - With release of velopitt alpha, I can backlog that
-#  - Mostly because I'm not sure on next steps
-#    a. Formalizing world building procedure into specific prompt
-#      - Making the AI shorter to fit into this window
-#      <- Somewhat done through the "principles pipeline"
-#    b. Developing RAG and context management modules
-#    c. Critique/Improver Agent
-#      <- Discussed with AI studio on `principles_generator.md`
-#      <- This can then be feed into the following prompts:
-#        - choices_ii.md (to generate next scene options)
-#        - principles_to_context.md (to generate writer context)
-#        - principle_reviewer.md (to review the generated document)
-#      - This doesn't yet integrate specific plot actions
-#      - Not sure how well it'd work in RPG/GM situations
-#    d. Expansion/Rewriter Agent
-#      - Some notes in rewriter.py
-#    e. Improving quality of "next options"
-#      <- Might have a potential solution with choices_ii.md
-#      - Though without long-term plot guidance, not very good
-#         - Can probably tighten up the prompt for reality, focusing on "small" changes this time around
-#    f. Dialing out the morbid/profound personality (also for prompts)
-#    g. Exploring the temperature/etc. in AI studio
-#    h. Can I get decent results with cheaper models (for the writing) DO
-#
-# CLI Improvements:
-#   - cut out the updated bible by default, present if requested
 #
 context: List[AnyMessage] = []
 constraints = config.load_story_file(args.story, 'constraints')
@@ -142,6 +118,7 @@ else:
     print(response)
 
 
+
 #
 # Keep writing until you want to stop
 #
@@ -164,7 +141,7 @@ while True:
 
     # Need a better way to continue on from the previous location
     response = send_message(
-        f'Plot Direction: "{prompt}"\n{constraints}', context)
+        f'Plot Direction: {prompt}\n{constraints}', context)
     print(response)
 
 # Store the conversation in a per-run file so we can easily send it to

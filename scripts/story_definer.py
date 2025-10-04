@@ -5,7 +5,7 @@ from lib.config import load_config, DataConstants
 from langchain_core.messages import AnyMessage, SystemMessage, HumanMessage
 
 config = load_config(DataConstants())
-model = LlmEngine(config, 'gemini', 'story_definer')
+model = LlmEngine(config, 'gemini', 'experiments/story_definer')
 
 context = [
     SystemMessage(content=model.prompt),

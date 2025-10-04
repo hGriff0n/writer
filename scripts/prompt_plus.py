@@ -7,7 +7,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 # Initialize chat app
 config = load_config(DataConstants())
-model = LlmEngine(config, 'gemini', 'feedback_analysis')
+model = LlmEngine(config, 'gemini', 'meta/feedback_analysis')
 
 # Load the chat file from the last conversation
 # We only keep the human messages because the feedback we give to the model

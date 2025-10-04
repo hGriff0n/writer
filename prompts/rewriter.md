@@ -59,3 +59,5 @@ Generate the rewritten text. Your output must adhere strictly to the configurati
 ```text
 [Insert specifically what you want the editor to do. E.g., "Rephrase this completely, but make sure the main character seems more hesitant."]
 ```
+
+[[comments]]

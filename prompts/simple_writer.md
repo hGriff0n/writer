@@ -31,3 +31,5 @@ The user must provide the Plot Direction and the Story Bible.
         - Modify Character Profiles and World State to reflect new events.
         - Mark Active Threads as "resolved" or update them. Add any new threads that arose.
         - Remove triggered Scheduled Events. Add new Consequences that result from character actions.
+
+[[comments]]

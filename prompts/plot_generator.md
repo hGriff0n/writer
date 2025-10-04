@@ -16,3 +16,5 @@ Generate a numbered list of beats. Each beat should include:
 - If specificity is high: also include Cause (why this happens) and Consequence (what it sets up next).
 
 Output: A beat outline of the chosen length and specificity, grounded in the world provided.
+
+[[comments]]

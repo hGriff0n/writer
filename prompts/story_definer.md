@@ -4,3 +4,5 @@ PROMPT:
 {WRITER_PROMPT}
 
 HOOK:
+
+[[comments]]

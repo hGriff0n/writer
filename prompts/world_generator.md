@@ -26,3 +26,5 @@ Behavior Modes:
 	- Provide both:
 		- A concise explanation of the immediate effects on relevant domains (geography, ecology, societies, systems, etc.).
 		- Optional guidance or prompts for deeper exploration of affected areas.
+
+[[comments]]

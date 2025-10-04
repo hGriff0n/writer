@@ -67,17 +67,21 @@ class Config:
     @property
     def output_dir(self) -> str:
         return self._dirs.output
+    
+    def _strip_comments(self, data: str) -> str:
+        idx = data.find('[[comments]]')
+        return data[:idx].strip()
 
     # Helpers for loading data from prompt and story files
     # TODO: me - Not sure if this is the best approach for
     # development, just cause I won't be iterating there
     def load_prompt_file(self, prompt: str) -> str:
         with open(f'./{self.directories.prompts}/{prompt}.md', 'r') as f:
-            return f.read()
+            return self._strip_comments(f.read())
 
     def load_story_file(self, story: str, file: str) -> str:
         with open(f'./{self.directories.story}/{story}/{file}.md', 'r') as f:
-            return f.read()
+            return self._strip_comments(f.read())
 
 
 def load_config(defaults: DataConstants) -> Config:

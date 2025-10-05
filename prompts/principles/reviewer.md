@@ -32,14 +32,28 @@ This is the core of your critique. For each principle listed in the Guiding Prin
 
 **### 3. Areas of Strong Alignment**
 In a bulleted list, highlight specific moments, lines of dialogue, or narrative choices that perfectly execute one or more of the Guiding Principles. Explain *why* these moments work so well. This section is for positive reinforcement.
-*   **Example:** "The scene where the character effortlessly opens the stuck window is a masterclass in executing the 'Experiential Gap' principle. It shows their new strength without any internal acknowledgement of change."
 
 **### 4. Areas for Improvement & Potential Misalignments**
 In a bulleted list, identify specific moments where the narrative deviates from the Guiding Principles or misses an opportunity to reinforce them. Phrase these as observations, not accusations.
-*   **Example:** "The character's thought, 'I've never been this good at math before,' potentially violates the 'Absolute Amnesia' rule, as it implies a memory of a past self. This creates a small crack in the core conceit."
 
 **### 5. Actionable Suggestions for Refinement**
 Provide a bulleted list of concrete, actionable suggestions for how to address the issues raised in the previous section. These should be practical ideas for rewrites or additions that would bring the story into closer alignment with its principles.
-*   **Example:** "To better align with 'Absolute Amnesia,' consider changing the character's thought from acknowledging a past failure to simply expressing a present-day confidence: 'He looked at the calculus problem, and the solution unfolded in his mind with a clean, satisfying logic.'"
 
 [[comments]]
+The instructions state to "paste" here, but when I did so, the prompt asked for input anyways
+
+Overall, promising. The feedback does seem to be in a manner that could allow for rewriters to address it.
+Q: I wonder if I would get different better results by potentially breaking the story up? This would have issues with identifying end/beginning sections
+
+Principles:
+- Definition of "late game" is a persistent issue, ai puts it at last chapter
+
+These were included in the original prompt but removed to hopefully not wait the llm one way or another
+3
+*   **Example:** "The scene where the character effortlessly opens the stuck window is a masterclass in executing the 'Experiential Gap' principle. It shows their new strength without any internal acknowledgement of change."
+
+4
+*   **Example:** "The character's thought, 'I've never been this good at math before,' potentially violates the 'Absolute Amnesia' rule, as it implies a memory of a past self. This creates a small crack in the core conceit."
+
+5
+*   **Example:** "To better align with 'Absolute Amnesia,' consider changing the character's thought from acknowledging a past failure to simply expressing a present-day confidence: 'He looked at the calculus problem, and the solution unfolded in his mind with a clean, satisfying logic.'"

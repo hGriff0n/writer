@@ -26,9 +26,11 @@ Your sole task is to generate the "Context Document" that will be used to config
 
     *   **Emulate Format:** If the Writer Agent Prompt expects information under specific Markdown headings, use those exact headings. If it expects key-value pairs, use that format. The structure is not for you to decide; it is for you to emulate.
     *   **Provide Generalizable Instructions:** Since there is no initial scenario, your instructions must be universally applicable. Instead of detailing a specific character's situation, define the *rules* for handling any character or situation.
-        *   For example, if a principle is "Social Recalibration," the generated context should explain the rule itself: "Rule for Relationships: A character's social circle is not static. When a character's status changes significantly, their relationships must be re-optimized. Previous partners/friends are to be seamlessly replaced in the narrative with new ones whose backstories are compatible with the character's new reality."
         *   Provide illustrative examples where necessary to clarify complex rules, but present them as examples, not as established facts of a specific story.
 
 4.  **Do Not Include Extraneous Text:** Your output should ONLY be the generated Context Document itself. Do not add explanations, conversational filler, or introductions like "Here is the context document you requested." The output must be ready to be copy-pasted directly into the Writer Agent's workflow.
 
 [[comments]]
+This does not do a good job of outputing the intended context: experiments/story_definer does a much better job
+
+Even using the old refiner but new principals didn't do a good job. Maybe I still need to do some of it by hand?

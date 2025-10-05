@@ -1,4 +1,7 @@
 
+import sys  # Allow this file to import like it was in the "main" folder
+sys.path.append(r'C:\Users\ghoop\Desktop\writer')
+
 import json
 
 from lib.ai import LlmEngine

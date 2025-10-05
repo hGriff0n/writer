@@ -1,4 +1,7 @@
 
+import sys  # Allow this file to import like it was in the "main" folder
+sys.path.append(r'C:\Users\ghoop\Desktop\writer')
+
 from lib.ai import LlmEngine, load_chat_log
 from lib.config import load_config, DataConstants
 

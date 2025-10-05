@@ -172,6 +172,10 @@ class LlmEngine:
     @property
     def prompt(self) -> str:
         return self._prompt
+    
+    @prompt.setter
+    def prompt(self, msg: str):
+        self._prompt = msg
 
     @property
     def llm(self) -> LlmModel:

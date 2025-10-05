@@ -5,6 +5,46 @@ TODO: me - Need to start formalizing this project (1)
 - With release of velopitt alpha, I can backlog that
 - Mostly because I'm not sure on next steps
 
+# Agentic Extensions
+- Implement RAG agent
+- Implement skills check agent
+
+# Formalising Input/Output Formats
+- Update the writer to expect the storybook in a structured format
+- Theoretically need to also pass the constraints in json
+- Experiment with getting the principles to output in that format
+
+Can I divide the aspects into general categories
+- Shift Pacing and tags can be handled with pre-processing
+- Generalize triggers to enable repeated events, don't remove repated events
+- Ability for triggered events to directly control generation terms
+    - Maybe two-phase, first phase determines triggers/etc.
+
+# Refining Principles Approach
+- Try the principles prompt with the curse story
+- Try the principles prompt with the mara story
+- Try the principles prompt with the thousand story
+
+# Plot Points to Refinement
+- Experiment with a multi-part story agent
+- First stage writes simple stage direction indicating the what that happens
+- These directions could theoretically include a lot of notes and context
+- Then have a follow-up writer that takes the input script and outputs story
+
+# Improving Writer and Next Choices Development
+- Actually have a decent progress in the choices_ii, but the output isn't usable
+- Potentially also a matter of integrating into the cli so you can reference one of the options
+- Mostly figuring out how to have a "long-term" plot manager
+- Basically trying to find a way to generalise the narrative constraints so that they are more reusable
+
+# Experiment With Basic Prompts
+- What would happen if I just use a basic editor prompt
+
+What if I can describe the output and get an author to write like?
+
+DSPy
+
+
 a. Formalizing world building procedure into specific prompt
     - Principles is a first pass on this but doesn't seem to generate good enough output to ensure the writer stays on track
 b. Developing RAG and context management modules

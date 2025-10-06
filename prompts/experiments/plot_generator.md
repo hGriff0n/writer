@@ -18,3 +18,6 @@ Generate a numbered list of beats. Each beat should include:
 Output: A beat outline of the chosen length and specificity, grounded in the world provided.
 
 [[comments]]
+This isn't quite workable as I'd have to specify too much, but it might be adaptable to work with principles
+
+This has also made it clear, that the principles didn't actually do a good job of encoding some of the requirements of the story and the journey

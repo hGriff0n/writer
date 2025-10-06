@@ -28,6 +28,8 @@ Can I divide the aspects into general categories
 # Plot Points to Refinement
 - Experiment with a multi-part story agent
 - First stage writes simple stage direction indicating the what that happens
+    <- initial implementation experiment in stories/reality/plot_beat_generator and stories/reality/expander
+    <- first pass at generalizing in experiments/architect
 - These directions could theoretically include a lot of notes and context
 - Then have a follow-up writer that takes the input script and outputs story
 
@@ -78,3 +80,19 @@ CLI Improvements:
 
 
 I can make a basic story using the help and an adjusted version of the existing narrative constraints. But directly using the principles approach does not seem to work, aside from maybe initially. WHY
+
+Long Term:
+  Local GPU
+  API Usage
+  Hosted GPU: https://vast.ai/
+
+plot_beat_generator
+- long term, doesn't handle the incremental updates, still insists on hardcode increments where the examples used them
+- overreliance on family history?
+- doesn't seem to be outpacing demographics, or escaping
+- thematic focus hint, immediately causes all events to reference
+- doesnt break out of explanations even after major changes
+
+expander:
+- took a little to nail down the constraints to get the text to generate correctly
+- the text seems to hew too closely to the scene, like ticking off mentions. the intention is to provide something to build off of and introduce values to make it better

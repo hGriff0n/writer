@@ -32,3 +32,7 @@ context = [
 ]
 print(model.invoke(f'CRITIQUE:\n{critique}', context))
 print(f'Cost of Run: {model.est_cost()}')
+
+# Initial Thoughts:
+# Pretty decent, but greatly shortened the individual chapters (because I passed in the full story). Not sure how to apply a more focused pass
+# The critique agent could also use some refinement

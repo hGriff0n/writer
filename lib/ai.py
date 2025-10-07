@@ -121,12 +121,12 @@ def load_chat_log(dir: str, filename: str) -> ChatLog:
     return ChatLog(**json.loads(p.read_text()))
 
 
-def init_model(llm_config: Dict[str, any]) -> LlmModel:
+def init_model(llm_config: Dict[str, any], *args, **kwargs) -> LlmModel:
     if (llm_config.get('api-key')):
         os.environ[llm_config['api-key']['name']
                    ] = llm_config['api-key']['value']
     return init_chat_model(
-        llm_config['name'], model_provider=llm_config.get('provider'))
+        llm_config['name'], model_provider=llm_config.get('provider'), *args, **kwargs)
 
 
 # Class to manage llm communications with some automatic features
@@ -140,7 +140,7 @@ class LlmEngine:
 
     DEFAULT_MODEL = 'gemini'
 
-    def __init__(self, config: Config, model: str, prompt_file: str):
+    def __init__(self, config: Config, model: str, prompt_file: str, *args, **kwargs):
         # Resolve the selected model, allowing for model to actually indicate
         # a profile which auto-includes specific model settings
         self._model_name = model

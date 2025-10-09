@@ -21,12 +21,9 @@ TODO: me - Need to start formalizing this project (1)
 - Try the principles prompt with the thousand story
 
 # Plot Points to Refinement
-- Make setup work for curse
 - Generalize the design of the plot and expander
-    - Rewrite curse and reality setups to new design
-
-# Integrating choices into the cli
-- Potentially also a matter of integrating into the cli so you can reference one of the options
+  - Rewrite curse and reality setups to new design
+  - https://aistudio.google.com/app/prompts/129vfGT5HIPIjC2a7srmgg6oBzntXxTpR
 
 # Experiment With Basic Prompts
 - What would happen if I just use a basic editor prompt
@@ -51,6 +48,7 @@ c. Critique/Improver/Rewrite/Expand Agent
     - Not sure how well it'd work in RPG/GM situations
 d. Dialing out the morbid/profound personality (also for prompts)
     - There currently isn't a good way to incorporate drifting psychology
+    - It's "foreshadowing" is very on the nose
 e. Can I get decent results with cheaper models (for the writing)
     - Would flash give okay results for editing only. YES
 
@@ -71,6 +69,9 @@ How to generalize current work:
     - The mechanistic idea can be a repeatable event
         - The required calculations are specific to encode though
         - Especially the consequential framework, although this can be somewhat integrated into a core component of reality manager
+        - Concept of "Triggers" (or "Narrative Engines")
+    - Narrative Rules and Principles
+    - Descriptive Tone
     - Traits and Attribute Tracking
         - Every character should have a detailed recording of all traits
         - Define quality to number conversion for all options too
@@ -79,22 +80,80 @@ How to generalize current work:
 
 I can make a basic story using the help and an adjusted version of the existing narrative constraints. But directly using the principles approach does not seem to work, aside from maybe initially. WHY
 
+Multi-plot lines: Each engine makes a suggestion and then a narrative agent decide which ones to accept/integrate/refuse/delay/etc based on story development
+
 
 Long Term:
   Local GPU
   API Usage
   Hosted GPU: https://vast.ai/
 
-plot_beat_generator
-- still doing direct assignment when it shouldn't
-- consequential ripples still need some work, but okay for now
-  - like the idea of specifically "attributing" points to each explanation
-- lost the aspect of "specific" change, but that can be corrected in editing
-  - but that's not an option for options
-- consequences try to "follow" the character too long
-  - but don't have a good way of systematizing this
-- social imperceptibility (some of the options it makes long-term should be banned)
-- sexiness (beauty seems to often be enhanced in one go)
+Unfortunately, I deleted the chats in the history where I asked for the generic writer
 
-expander:
-- a bunch of work can be done on touching up the tone/adding hints for later stages
+## Generalizing reality/principles/architect.md
+
+Your role and modes: Good general
+Next section: specific story, identifying goals and principles
+Core Principles: Story-specific
+Domain Rate: Story-specific
+Input Parameters: Largely general, story specific interpretations
+Output Generation: Mostly story-specific
+Output format: Story specific
+
+### Each section use
+Prompt role and Modes: Sequential, Specific, Options
+Basic overview of the main story trope and intended experience
+- Also reinforces following principles and format
+  <- Can I explicitly split this into two sections? One for following one for experience. The later could be the intro for section 1 too
+List of "Core Principles" for the World/Story
+Constant Data Section
+Input Parameters
+- Should be possible to structure most aspects
+- But will also need a lot of story-specific data
+Generation Process for Output
+- A little bit of modal handling
+- Trigger calculation
+Output Formatting
+
+### From Doctors
+- 4/5 "Systems (for non-RPG)
+  - Events/Triggers - If This Then That
+    - Condition
+    - Outcome
+    - Repeated
+  - Engines - Finite Plot Machines
+    - Story Promises++
+    - "Travel Agent" - Responsible for ensuring group arrives on time
+    - "World Agent" - Simulating world stuff, or maybe that's a character
+    - "Antagonist"
+    - Director
+  - Data - History+Lore+WorldState
+    - Librarian/RAG
+    - World Generator
+    - Lore Researcher
+    - Summarizer/Context
+  - Functions - SkillChecks/Mechanics
+    - Style Prohibitions?
+  - And a bunch of uncategorized stuff...
+    - Characters
+    - Voice/styles
+    - Principles
+    - Options/Choices
+    - Long Form
+    - Extending/replacing/rewriting
+- 
+
+### Systematizing Matrix
+Domain matrix is then referenced in output generation
+The entire output generation is basically one trigger/narrative engine
+
+## Generalizing reality/principles/scene_write.md
+
+Your role: Slightly story-specific
+Guiding Principles: Very story specific
+Story Beat: Slightly Story Specific
+How to Translate: Slightly Story Specific
+Directives: Explicitly Story Specific
+Execution: General, potentially removable
+
+Scene write is ultimately harder to systematize because it's dealing with the "voice" of the story

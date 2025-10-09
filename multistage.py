@@ -25,18 +25,29 @@ parser.add_argument('-c', '--resume', action='store_true')
 
 # Initialize chat app
 args = parser.parse_args()
-if args.story != 'reality':
-    raise Exception('Only have multi-stage workflow defined for reality story')
 
 config = load_config(DEFS)
 
-
+#
 # The current `LlmEngine` approach "assumes" one prompt per llm
 # Which has downsides (such as this) and upsides (cleaner calling, mostly)
 # Is it better to have one engine per prompt, or reuse the same engine for
 # multiple prompts? The former is required when using different models
+#
+
+# The architect is a multi-purpose agent dealing with all things about plot
+# direction. There are basically 3 modes: planning, options, and
+# translation. Planning pre-creates a sequence of `7` chapters whenever no
+# input is provided. If the user inputs a change of their own, the plan is
+# dropped and the "translation" mode is used to produce an output that the
+# writer can use for generation. The user can also query the ai for some
+# options, which will provide `3` different ways for progressing the story
 architect = LlmEngine(config, args.profile, args.prompt, temperature=0.4)
-architect.prompt = config.load_story_file(args.story, 'principles/plot_beat_generator')
+architect.prompt = config.load_story_file(args.story, 'principles/architect')
+
+# The writer is solely responsible for taking the plot beat provided by the
+# architect and expand it into an actual chapter of prose that extends the
+# story it is currently writing
 writer = LlmEngine(config, args.profile, args.prompt, temperature=1.7)
 writer.prompt = config.load_story_file(args.story, 'principles/scene_write')
 
@@ -62,20 +73,22 @@ def send_message(llm: LlmEngine, message: str,
     return llm.invoke(message, context)
 
 
-PACE = 1
+# `PACE` is a meta-control for the reality story that adjusts how quickly
+# the story progresses
+EXTRA = "\nPACING MODIFIER: 1" if args.story == 'reality' else ''
 PLOT_PLAN = []
-PLAN_PROMPT = """
-GENERATION MODE: Sequential
-PACING MODIFIER: {PLAN}
-NUMBER OF BEATS: 7
-"""
 
+# Helper method for splitting the next input from the existing plan.
+# If there are no planned inputs currently, this requests a new set
 def get_next_input_from_plan():
     global PLOT_PLAN
     if not PLOT_PLAN:    
-        REQUEST_PLAN = f"GENERATION MODE: Sequential\nPACING MODIFIER: {PACE}\nNUMBER OF BEATS: 7"
+        REQUEST_PLAN = f"GENERATION MODE: Sequential{EXTRA}\nNUMBER OF BEATS: 7"
         plan = send_message(architect, REQUEST_PLAN, write_context)
-        PLOT_PLAN = re.split("\\*\\*\\*", plan)[1:]
+        if args.story == 'reality':
+            PLOT_PLAN = re.split("\\*\\*\\*", plan)[1:]
+        else:
+            PLOT_PLAN = [yaml.safe_dump(o) for o in next(yaml.safe_load_all(plan[8:-4]))]
     
     prompt, PLOT_PLAN = PLOT_PLAN[0], PLOT_PLAN[1:]
     return prompt
@@ -100,12 +113,7 @@ if args.resume:
     print(write_context[0].content)
 
 else:
-    START = f"""
-    GENERATION MODE: Specified
-    CURRENT STATE: Anya, a mildly depressed couch potato stuck in a dead end job as a data clerk at a no-name corporation. Peristent adult acne, poor eyesight requiring thick corrective lenses, 5'4", little money or social engagement. Wears functional unflattering clothes to hide her poor figure
-    SPECIFIED CHANGE: I do not need glasses at all
-    PACE MODIFIER: {PACE}
-    """
+    START = config.load_story_file(args.story, 'start')
     arch_context: List[AnyMessage] = []
     plan = send_message(architect, START, arch_context)
 
@@ -118,8 +126,7 @@ else:
 # This will require some processing to work
 #
 CHOICE_PROMPT = f"""
-GENERATION MODE: Options
-PACE MODIFIER: {PACE}
+GENERATION MODE: Options{EXTRA}
 NUMBER OF BEATS: """
 def summarize_plot_beats(beats: List[str]) -> List[str]:
     return [
@@ -127,10 +134,16 @@ def summarize_plot_beats(beats: List[str]) -> List[str]:
         for o in beats
     ]
 
+# TODO: for curse, this is ``yaml{formatted yaml}```
+import yaml
 def ask_for_ideas(context: List[AnyMessage]) -> Tuple[List[str], List[str]]:
     output = send_message(architect, CHOICE_PROMPT + "3", context)
-    options = re.split('\\*\\*\\*', output)[1:]
-    return summarize_plot_beats(options), options
+    if args.story == 'reality':
+        options = re.split('\\*\\*\\*', output)[1:]
+        return summarize_plot_beats(options), options
+    else:
+        options = next(yaml.safe_load_all(output[8:-4]))
+        return [o['beat_summary'] for o in options], [yaml.safe_dump(o) for o in options]
 
 
 #

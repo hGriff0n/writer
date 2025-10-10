@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 import json
 import re
 from typing import Dict, List, Tuple
+import yaml
 
 from lib.ai import LlmEngine
 from lib.config import load_config, DataConstants
@@ -25,7 +26,6 @@ parser.add_argument('-c', '--resume', action='store_true')
 
 # Initialize chat app
 args = parser.parse_args()
-
 config = load_config(DEFS)
 
 #
@@ -73,29 +73,44 @@ def send_message(llm: LlmEngine, message: str,
     return llm.invoke(message, context)
 
 
-# `PACE` is a meta-control for the reality story that adjusts how quickly
-# the story progresses
-EXTRA = "\nPACING MODIFIER: 1" if args.story == 'reality' else ''
-PLOT_PLAN = []
+# TODO: me - Figure out a way to control pacing generically
+EXTRA = "\npacing_modifier: 1" if args.story == 'reality' else ''
 
 # Helper method for splitting the next input from the existing plan.
-# If there are no planned inputs currently, this requests a new set
+# If there are no planned inputs currently, this requests a new set 
+REQUEST_PLAN = f"""```yaml
+directive:
+    mode: Sequential{EXTRA}
+    count: 7
+```"""
+PLOT_PLAN = []
 def get_next_input_from_plan():
     global PLOT_PLAN
-    if not PLOT_PLAN:    
-        REQUEST_PLAN = f"GENERATION MODE: Sequential{EXTRA}\nNUMBER OF BEATS: 7"
+    if not PLOT_PLAN:
         plan = send_message(architect, REQUEST_PLAN, write_context)
-        if args.story == 'reality':
-            PLOT_PLAN = re.split("\\*\\*\\*", plan)[1:]
-        else:
-            PLOT_PLAN = [yaml.safe_dump(o) for o in next(yaml.safe_load_all(plan[8:-4]))]
+        PLOT_PLAN = [yaml.safe_dump(o) for o in next(yaml.safe_load_all(plan))]
     
     prompt, PLOT_PLAN = PLOT_PLAN[0], PLOT_PLAN[1:]
     return prompt
 
 
-# Otherwise we're starting a new story, so simply load up the default
-# start command and start writing automatically.
+# Helper method for requesting potential next options from the planner
+CHOICE_PROMPT = f"""```yaml
+directive:
+    mode: Options{EXTRA}
+    count: 3
+```"""
+def summarize_plot_beats(beats: List[str]) -> List[str]:
+    return [o['beat_summary' if args.story == 'curse' else 'title'] for o in options]
+
+def ask_for_ideas(context: List[AnyMessage]) -> Tuple[List[str], List[str]]:
+    output = send_message(architect, CHOICE_PROMPT, context)
+    options = next(yaml.safe_load_all(output))
+    return summarize_plot_beats(options), [yaml.safe_dump(o) for o in options]
+
+
+# TODO: me - would this need to parsed into yaml?
+# Allow for resuming an in-progress story
 if args.resume:
     print("Loading in-progress story...")
     file = f'{config.directories.story}/{args.story}/principles/tmp.json'
@@ -112,6 +127,8 @@ if args.resume:
     print(f"Loaded previous story from {file}")
     print(write_context[0].content)
 
+# Otherwise we're starting a new story, so simply load up the default
+# start command and start writing automatically.
 else:
     START = config.load_story_file(args.story, 'start')
     arch_context: List[AnyMessage] = []
@@ -119,31 +136,8 @@ else:
 
     write_context: List[AnyMessage] = []
     text = send_message(writer,
-                        f'<beat_data>{plan}</beat_data>', write_context)
+                        f'```yaml\n{plan}```', write_context)
     print(text)
-
-#
-# This will require some processing to work
-#
-CHOICE_PROMPT = f"""
-GENERATION MODE: Options{EXTRA}
-NUMBER OF BEATS: """
-def summarize_plot_beats(beats: List[str]) -> List[str]:
-    return [
-        re.search('\\*\\*Change Command:\\*\\* `(.*)`', o).group(1)
-        for o in beats
-    ]
-
-# TODO: for curse, this is ``yaml{formatted yaml}```
-import yaml
-def ask_for_ideas(context: List[AnyMessage]) -> Tuple[List[str], List[str]]:
-    output = send_message(architect, CHOICE_PROMPT + "3", context)
-    if args.story == 'reality':
-        options = re.split('\\*\\*\\*', output)[1:]
-        return summarize_plot_beats(options), options
-    else:
-        options = next(yaml.safe_load_all(output[8:-4]))
-        return [o['beat_summary'] for o in options], [yaml.safe_dump(o) for o in options]
 
 
 #
@@ -183,11 +177,13 @@ while True:
     response = send_message(writer, prompt, write_context)
     print(response)
 
+
 # Store the conversation in a per-run file so we can easily send it to
 # other prompts for improvements/etc.
 print(f'Cost of Run: {writer.est_cost() + architect.est_cost()}')
 chat_file = writer.chat_log.save(config.output_dir)
 arch_file = architect.chat_log.save(config.output_dir)
+
 
 # TODO: me - What does this do that's not already in the chat log?
 # Aside from saving in the same location as the story files ???

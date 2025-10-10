@@ -10,20 +10,26 @@ TODO: me - Need to start formalizing this project (1)
 - Implement skills check agent
 
 # Formalising Input/Output Formats
-- Update the writer to expect the storybook in a structured format
+- Update the writer to expect the storybook in a structured format (yaml)
 - Theoretically need to also pass the constraints in json
 - Experiment with getting the principles to output in that format
 - Plot Beat Generator should definitely ouput json, would make options parsing better
 
 # Refining Principles Approach
-- Try the principles prompt with the curse story
 - Try the principles prompt with the mara story
 - Try the principles prompt with the thousand story
 
 # Plot Points to Refinement
+- Why did the plan this time around go straight to revolt
+  - See if the ai studio prompt had some stuff i forgot to carry over
 - Generalize the design of the plot and expander
+  - ~~Rewrite reality to yaml input and output~~
+    - Update multistage to take new reality prompt
+  - Rewrite curse to take yaml input and update multistage
+    - Potentially possible to merge multistage and writer???
+  - Discuss about updating reality to engine and events
+    - There are a couple aspects that don't align fully though
   - Rewrite curse and reality setups to new design
-  - https://aistudio.google.com/app/prompts/129vfGT5HIPIjC2a7srmgg6oBzntXxTpR
 
 # Experiment With Basic Prompts
 - What would happen if I just use a basic editor prompt
@@ -38,6 +44,7 @@ a. Formalizing world building procedure into specific prompt
     - https://aistudio.google.com/app/prompts/1TfQ0X81epFXMMHLU204klSh_v8g_nYp-
     - Current principles workflow will miss a few aspects
         - https://aistudio.google.com/app/prompts/1XZLvOcTQf1ST4TocdfSz57QWPxlWdNBC
+    - principles > architect > writer
 b. Developing RAG and context management modules
 c. Critique/Improver/Rewrite/Expand Agent
     - The critique agent works decently well, but the other agents do not
@@ -64,21 +71,6 @@ Can I divide the aspects into general categories
 - Ability for triggered events to directly control generation terms
     - Maybe two-phase, first phase determines triggers/etc.
 
-How to generalize current work:
-- **Reality**
-    - The mechanistic idea can be a repeatable event
-        - The required calculations are specific to encode though
-        - Especially the consequential framework, although this can be somewhat integrated into a core component of reality manager
-        - Concept of "Triggers" (or "Narrative Engines")
-    - Narrative Rules and Principles
-    - Descriptive Tone
-    - Traits and Attribute Tracking
-        - Every character should have a detailed recording of all traits
-        - Define quality to number conversion for all options too
-    - Making the Beat Generator emotionless is a good idea
-
-
-I can make a basic story using the help and an adjusted version of the existing narrative constraints. But directly using the principles approach does not seem to work, aside from maybe initially. WHY
 
 Multi-plot lines: Each engine makes a suggestion and then a narrative agent decide which ones to accept/integrate/refuse/delay/etc based on story development
 

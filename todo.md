@@ -1,40 +1,28 @@
 
 https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 
-TODO: me - Need to start formalizing this project (1)
-- With release of velopitt alpha, I can backlog that
-- Mostly because I'm not sure on next steps
-
 # Agentic Extensions
 - Implement RAG agent
 - Implement skills check agent
 
-# Formalising Input/Output Formats
-- Update the writer to expect the storybook in a structured format (yaml)
-- Theoretically need to also pass the constraints in json
-- Experiment with getting the principles to output in that format
-- Plot Beat Generator should definitely ouput json, would make options parsing better
-
 # Refining Principles Approach
 - Try the principles prompt with the mara story
 - Try the principles prompt with the thousand story
+- Try the principles prompt with the level story
 
 # Plot Points to Refinement
-- Why did the plan this time around go straight to revolt
-  - See if the ai studio prompt had some stuff i forgot to carry over
-- Generalize the design of the plot and expander
-  - ~~Rewrite reality to yaml input and output~~
-    - Update multistage to take new reality prompt
-  - Rewrite curse to take yaml input and update multistage
-    - Potentially possible to merge multistage and writer???
-  - Discuss about updating reality to engine and events
-    - There are a couple aspects that don't align fully though
-  - Rewrite curse and reality setups to new design
+- Migrate the historical progression narrative to engines in curse
+- Work on adding events to the prompt handling
+- Work on establishing what a principle and rule is
+- Discuss about updating reality to events
+  - There are a couple aspects that don't align fully though
+- Rewrite curse and reality setups to new design
+
+# !!! Clean up the Presentation in CLI !!!
+- I was thinking about the story bible though that's only in ai studio
 
 # Experiment With Basic Prompts
 - What would happen if I just use a basic editor prompt
-
-What if I can describe the output and get an author to write like?
 
 DSPy
 
@@ -45,34 +33,12 @@ a. Formalizing world building procedure into specific prompt
     - Current principles workflow will miss a few aspects
         - https://aistudio.google.com/app/prompts/1XZLvOcTQf1ST4TocdfSz57QWPxlWdNBC
     - principles > architect > writer
-b. Developing RAG and context management modules
-c. Critique/Improver/Rewrite/Expand Agent
-    - The critique agent works decently well, but the other agents do not
-        - With some manual adjustments, I can get passable output by attaching to the existing systems
-        - [ ] Need to figure out where this went wrong
-        - [ ] Potentially worth investing in structured input/output
-    - This doesn't yet integrate specific plot actions
-    - Not sure how well it'd work in RPG/GM situations
-d. Dialing out the morbid/profound personality (also for prompts)
-    - There currently isn't a good way to incorporate drifting psychology
-    - It's "foreshadowing" is very on the nose
-e. Can I get decent results with cheaper models (for the writing)
-    - Would flash give okay results for editing only. YES
 
-
-CLI Improvements:
-- cut out the updated bible by default, present if requested
-  - needs a more consistent handling of state especially resume
-
-
-Can I divide the aspects into general categories
-- Shift Pacing and tags can be handled with pre-processing
-- Generalize triggers to enable repeated events, don't remove repated events
-- Ability for triggered events to directly control generation terms
-    - Maybe two-phase, first phase determines triggers/etc.
-
-
-Multi-plot lines: Each engine makes a suggestion and then a narrative agent decide which ones to accept/integrate/refuse/delay/etc based on story development
+- Rules may also be useful as a way of "extending schemas" so that I can make the yaml fully general?
+  - Would it be possible to using "typed yaml"?
+    - Say that this schema applies to `X` fields
+    - Then use the `<field>: [X]` to apply the schema
+  - This might also imply that schema is a separate category
 
 
 Long Term:
@@ -82,30 +48,14 @@ Long Term:
 
 Unfortunately, I deleted the chats in the history where I asked for the generic writer
 
-## Generalizing reality/principles/architect.md
-
-Your role and modes: Good general
-Next section: specific story, identifying goals and principles
-Core Principles: Story-specific
-Domain Rate: Story-specific
-Input Parameters: Largely general, story specific interpretations
-Output Generation: Mostly story-specific
-Output format: Story specific
-
-### Each section use
-Prompt role and Modes: Sequential, Specific, Options
-Basic overview of the main story trope and intended experience
-- Also reinforces following principles and format
-  <- Can I explicitly split this into two sections? One for following one for experience. The later could be the intro for section 1 too
-List of "Core Principles" for the World/Story
-Constant Data Section
-Input Parameters
-- Should be possible to structure most aspects
-- But will also need a lot of story-specific data
-Generation Process for Output
-- A little bit of modal handling
-- Trigger calculation
-Output Formatting
+## Generalizing architect.md
+Intro: Common
+Core Principles: Completely story specific, starting on common principles
+Narrative Engines: Identified common elements, but mostly story specific
+Data: Completely story specific, not identified common themes
+Input Specification: Mostly common, want to have way of including story specific schema customizations
+Generation: Mostly common, minor story specifics in finalization
+Output: Almost common, just need story specific schemas
 
 ### From Doctors
 - 4/5 "Systems (for non-RPG)
@@ -126,26 +76,10 @@ Output Formatting
     - Summarizer/Context
   - Functions - SkillChecks/Mechanics
     - Style Prohibitions?
+  - Principles
   - And a bunch of uncategorized stuff...
     - Characters
-    - Voice/styles
-    - Principles
-    - Options/Choices
+    - Voice/styles (more writer customization)
+    - Options/Choices/Planning (separate agent)
     - Long Form
-    - Extending/replacing/rewriting
-- 
-
-### Systematizing Matrix
-Domain matrix is then referenced in output generation
-The entire output generation is basically one trigger/narrative engine
-
-## Generalizing reality/principles/scene_write.md
-
-Your role: Slightly story-specific
-Guiding Principles: Very story specific
-Story Beat: Slightly Story Specific
-How to Translate: Slightly Story Specific
-Directives: Explicitly Story Specific
-Execution: General, potentially removable
-
-Scene write is ultimately harder to systematize because it's dealing with the "voice" of the story
+    - Extending/replacing/rewriting (separate agent)

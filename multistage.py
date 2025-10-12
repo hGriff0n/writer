@@ -27,6 +27,7 @@ parser.add_argument('-c', '--resume', action='store_true')
 # Initialize chat app
 args = parser.parse_args()
 config = load_config(DEFS)
+story = config.load_story(args.story)
 
 #
 # The current `LlmEngine` approach "assumes" one prompt per llm
@@ -42,14 +43,12 @@ config = load_config(DEFS)
 # dropped and the "translation" mode is used to produce an output that the
 # writer can use for generation. The user can also query the ai for some
 # options, which will provide `3` different ways for progressing the story
-architect = LlmEngine(config, args.profile, args.prompt, temperature=0.4)
-architect.prompt = config.load_story_file(args.story, 'principles/architect')
+architect = LlmEngine(config, args.profile, prompt=story.architect, temperature=0.4)
 
 # The writer is solely responsible for taking the plot beat provided by the
 # architect and expand it into an actual chapter of prose that extends the
 # story it is currently writing
-writer = LlmEngine(config, args.profile, args.prompt, temperature=1.7)
-writer.prompt = config.load_story_file(args.story, 'principles/scene_write')
+writer = LlmEngine(config, args.profile, prompt=story.writer, temperature=1.7)
 
 
 #
@@ -74,7 +73,7 @@ def send_message(llm: LlmEngine, message: str,
 
 
 # TODO: me - Figure out a way to control pacing generically
-EXTRA = "\npacing_modifier: 1" if args.story == 'reality' else ''
+EXTRA = "\npacing_modifier: 1" if story.title == 'reality' else ''
 
 # Helper method for splitting the next input from the existing plan.
 # If there are no planned inputs currently, this requests a new set 
@@ -101,7 +100,7 @@ directive:
     count: 3
 ```"""
 def summarize_plot_beats(beats: List[str]) -> List[str]:
-    return [o['beat_summary' if args.story == 'curse' else 'title'] for o in options]
+    return [o['beat_summary' if story.title == 'curse' else 'title'] for o in options]
 
 def ask_for_ideas(context: List[AnyMessage]) -> Tuple[List[str], List[str]]:
     output = send_message(architect, CHOICE_PROMPT, context)
@@ -113,7 +112,7 @@ def ask_for_ideas(context: List[AnyMessage]) -> Tuple[List[str], List[str]]:
 # Allow for resuming an in-progress story
 if args.resume:
     print("Loading in-progress story...")
-    file = f'{config.directories.story}/{args.story}/principles/tmp.json'
+    file = f'{config.directories.story}/{story.title}/principles/tmp.json'
     with open(file, 'r', encoding='utf-8') as f:
         story = json.load(f)
     
@@ -130,7 +129,7 @@ if args.resume:
 # Otherwise we're starting a new story, so simply load up the default
 # start command and start writing automatically.
 else:
-    START = config.load_story_file(args.story, 'start')
+    START = story.first_turn
     arch_context: List[AnyMessage] = []
     plan = send_message(architect, START, arch_context)
 
@@ -189,6 +188,6 @@ arch_file = architect.chat_log.save(config.output_dir)
 # Aside from saving in the same location as the story files ???
 # Save the current state of generation in a temp file in the story directory
 # This is to enable continuations through the --resume flag
-story = [response for response in writer.chat_log.having_role('AI')]
-with open(f'./{config.directories.story}/{args.story}/principles/tmp.json', 'w', encoding='utf-8') as f:
-    json.dump({ 'chapters': story, 'writer_file': chat_file, 'architect': arch_file, 'plan': PLOT_PLAN }, f, ensure_ascii=False, indent=4)
+book = [response for response in writer.chat_log.having_role('AI')]
+with open(f'./{config.directories.story}/{story.title}/principles/tmp.json', 'w', encoding='utf-8') as f:
+    json.dump({ 'chapters': book, 'writer_file': chat_file, 'architect': arch_file, 'plan': PLOT_PLAN }, f, ensure_ascii=False, indent=4)

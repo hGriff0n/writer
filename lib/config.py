@@ -8,6 +8,18 @@ import yaml
 # https://catt.rs/en/stable/
 # https://github.com/Fatal1ty/mashumaro?tab=readme-ov-file#usage-example
 
+def _strip_comments(data: str) -> str:
+    idx = data.find('[[comments]]')
+    return data[:idx].strip()
+
+def _load_yaml(file):
+    with open(file, 'r') as f:
+        return yaml.safe_load(f)
+    
+def _load_markdown(file):
+    with open(file, 'r') as f:
+        return _strip_comments(f.read())
+
 # For system/program constants that are not mutable
 # Theoretically, this could be eventually used to support multiple different
 # llms with specific configurations, while allowing for profiles to reduce
@@ -16,8 +28,7 @@ class DataConstants:
     FILE_LOCATION = './data/constants.yaml'
 
     def __init__(self):
-        with open(self.FILE_LOCATION, 'r') as f:
-            self._data = yaml.safe_load(f)
+        self._data = _load_yaml(self.FILE_LOCATION)
         self._supported_names = [m['name']
                                  for m in self._data['supported-ais']]
 
@@ -38,14 +49,65 @@ class Directories:
     story: str
 
 
+# Extremely basic story file
+# TODO: Adjust when I change the aspects to be separated
+class StoryFile:
+
+    def __init__(self, story, path, yaml):
+        self._story = story
+        self._path = path
+        self._yaml = yaml
+        self._principles = None
+        self._writer = None
+        self._start = None
+        self._lore = None
+        self._plot = None
+
+    def _load(self, file):
+        return _load_markdown(f'{self._path}/{file}.md')
+    
+    @property
+    def title(self) -> str:
+        return self._story
+
+    @property
+    def principles(self) -> str:
+        if not self._principles:
+            self._principles = self._load(self._yaml['principles'])
+        return self._principles
+
+    @property
+    def writer(self) -> str:
+        if not self._writer:
+            self._writer = self._load(self._yaml['writer'])
+        return self._writer
+
+    @property
+    def first_turn(self) -> str:
+        if not self._start:
+            self._start = self._load(self._yaml['first_turn'])
+        return self._start
+
+    @property
+    def lore(self) -> str:
+        if not self._lore:
+            self._lore = self._load(self._yaml['lore'])
+        return self._lore
+
+    @property
+    def architect(self) -> str:
+        if not self._plot:
+            self._plot = self._load(self._yaml['plot'])
+        return self._plot
+
+
 # For user-specific configurations (also ai profiles)
 class Config:
     CONFIG_FILE_LOCATION = './data/config.yaml'
 
     def __init__(self, constants: DataConstants):
         self._defs = constants
-        with open(self.CONFIG_FILE_LOCATION, 'r') as f:
-            self._data = yaml.safe_load(f)
+        self._data = _load_yaml(self.CONFIG_FILE_LOCATION)
         self._dirs = Directories(**self._data['directories'])
 
     @property
@@ -67,21 +129,22 @@ class Config:
     @property
     def output_dir(self) -> str:
         return self._dirs.output
-    
-    def _strip_comments(self, data: str) -> str:
-        idx = data.find('[[comments]]')
-        return data[:idx].strip()
 
     # Helpers for loading data from prompt and story files
     # TODO: me - Not sure if this is the best approach for
     # development, just cause I won't be iterating there
     def load_prompt_file(self, prompt: str) -> str:
         with open(f'./{self.directories.prompts}/{prompt}.md', 'r') as f:
-            return self._strip_comments(f.read())
+            return _strip_comments(f.read())
+
+    def load_story(self, story: str) -> str:
+        base_file = f'./{self.directories.story}/{story}/principles'
+        with open(f'{base_file}/story.yaml', 'r') as f:
+            return StoryFile(story, base_file, yaml.safe_load(f))
 
     def load_story_file(self, story: str, file: str) -> str:
         with open(f'./{self.directories.story}/{story}/{file}.md', 'r') as f:
-            return self._strip_comments(f.read())
+            return _strip_comments(f.read())
 
 
 def load_config(defaults: DataConstants) -> Config:

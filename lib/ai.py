@@ -140,7 +140,7 @@ class LlmEngine:
 
     DEFAULT_MODEL = 'gemini'
 
-    def __init__(self, config: Config, model: str, prompt_file: str, *args, **kwargs):
+    def __init__(self, config: Config, model: str, prompt_file: str = None, prompt: str = None, *args, **kwargs):
         # Resolve the selected model, allowing for model to actually indicate
         # a profile which auto-includes specific model settings
         self._model_name = model
@@ -155,7 +155,7 @@ class LlmEngine:
 
         # Setup the rest of the engine.
         self._llm = init_model(self._model_config)
-        self._prompt = config.load_prompt_file(prompt_file)
+        self._prompt = prompt if prompt else config.load_prompt_file(prompt_file)
         self._log = ChatLog(template=self._prompt, conversation=[])
         self._usage = UsageTracker(self._model_name, config.constants)
 

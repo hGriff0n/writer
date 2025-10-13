@@ -11,15 +11,16 @@ You must adhere to all instructions with absolute precision. Your entire output 
 
 *This section defines the static, unchanging laws of the story's universe.*
 
-<narrative_intent>
+**Narrative Intent:**
+<narrative_intent/>
 
-<core_concepts>
+<core_concepts/>
 
 # II. Narrative Engines
 
 *This section defines the dynamic plot drivers. Each engine governs a specific storyline, with its own triggers and rules.*
 
-<engines>
+<engines/>
 
 # III. Data & Schemas
 
@@ -28,19 +29,15 @@ You must adhere to all instructions with absolute precision. Your entire output 
 **3.1. Story-Specific Schemas**
 *This section defines the unique data structures for the current narrative.*
 
-**3.1.1. Input Schema Extensions:**
-*These are additional top-level fields required for the story's input YAML, if any.*
-<input_extensions />
-
-**3.1.2. Additional Output Schema:**
+**3.1.1. Additional Output Schema:**
 *This defines additional story-specific details within the `state_change` block of the output.*
 <additional_state />
 
-**3.1.3. Writer Guidance Schema:**
+**3.1.2. Writer Guidance Schema:**
 *This defines the structure of the `writer_guidance` block in the output.*
 <writer_guidance />
 
-**3.1.4. Character Schema:**
+**3.1.3. Character Schema:**
 *This defines the data structure for a single character object.*
 <character_schema />
 
@@ -58,16 +55,18 @@ directive:
   # The number of items to generate. Used only for Sequential or Options modes.
   count: "[Integer]"
   
-  # The user-provided prompt. Used only for Specified mode.
-  prompt: "[String]"
+  # GENERATION GUIDANCE
+  # In 'Specified' mode, this is the exact command to execute.
+  # In 'Sequential' or 'Options' mode, this is an optional thematic hint to guide generation.
+  generation_prompt: "[String]"
 
-  # Additional story-specific parameters: see 3.1.1.
-  story:
-    <input_extensions>
+  # An optional modifier to control the narrative speed.
+  # The interpretation of these values is defined by the story-sppecific rules.
+  pacing_modifier: [Integer from 1-6]
 
 story_state:
   # A list containing the complete data for ALL tracked characters
-  # Each object in this list MUST conform to the `Character Schema` defined in Section 3.1.4.
+  # Each object in this list MUST conform to the `Character Schema` defined in Section 3.1.3.
   characters:
     - # ... character data ...
   
@@ -90,24 +89,26 @@ b. CRITICAL: Any references in this prompt that refer to "the protagonist" MUST 
   **A. If `mode` is `Sequential`:**
     1.  **Loop:** Iterate `directive.count` times. Maintain a temporary `story_state` that updates after each iteration.
     2.  **For each iteration:**
-        a. **Select:** Select an active `Narrative Engine`, prioritizing engines used less frequently in the current sequence to ensure variety.
-        B. **Propose:** Generate a `proposed_action` using the selected engine's logic.
+        a. **Select:** Assess the current story situation, including which `Narrative Engine` have been recently used and which have not.
+            - If a `directive.generation_prompt` is provided, use it as a thematic hint to select the most appropriate `Narrative Engine`.
+            - Otherwise, prioritise selecting a `Narrative Engine` that has not been recently used to improve variety.
+        B. **Propose:** Generate a `proposed_action` using the selected engine's logic, incorporating `directive.generation_prompt` if provided.
         C. **Finalize:** Execute the **Finalization Steps** (see below) using the proposed `proposed_action` to generate a complete beat.
         D. **Update:** The `story_state` from the generated beat becomes the input for the next iteration.
     3.  Proceed to **Assemble Output**.
 
   **B. If `mode` is `Options`:**
-    1.  **Propose:** For each active `Narrative Engines`, generate a distinct `proposed_action` that reflects its core purpose.
+    1.  **Propose:** For each active `Narrative Engines`, generate a distinct `proposed_action` that reflects its core purpose. The proposed action MUST align with `directive.generation_prompt` if provided.
     2.  **Finalize:** For each of these proposed commands, individually execute the **Finalization Steps** (see below).
     3.  Proceed to **Assemble Output**.
 
   **C. If `mode` is `Specified`:**
-    1.  **Adopt:** Use the string from `directive.prompt` as the `proposed_action`.
+    1.  **Adopt:** Use the string from `directive.generation_prompt` as the `proposed_action`.
     2.  **Finalize:** Execute the **Finalization Steps** (see below) to generate a single complete beat.
 
 3.  **Finalization Steps (Shared Logic):**
 *This is the shared logic for converting a 
-    1.  **Calculate State Changes:** Based on the `proposed_action` and the current `story_state`, execute the story-specific state change rules defined in <beat_assembly_rules> to calculate all modifications to characters, world state, and narrative context.
+    1.  **Calculate State Changes:** Based on the `proposed_action` and the current `story_state`, execute the story-specific state change rules defined in <beat_assembly_rules/> to calculate all modifications to characters, world state, and narrative context.
 
     2.  **Construct Beat:** Assemble all calculated data and narrative text into a single YAML object that conforms to the `Output Specification`.
 
@@ -132,14 +133,14 @@ b. CRITICAL: Any references in this prompt that refer to "the protagonist" MUST 
   beat_summary: "[A concise, emotionless, one-sentence summary of the core event.]"
   
   state_change:
-    # A list containing the complete data for ALL tracked characters, conforming to the schema in Section 3.1.4.
+    # A list containing the complete data for ALL tracked characters, conforming to the schema in Section 3.1.3.
     characters:
       - # ... character data ...
     
-    # Additional story state as described in Section 3.1.2.
+    # Additional story state as described in Section 3.1.1.
     <additional_state/>
 
-  # Formatted according to Section 3.1.3.
+  # Formatted according to Section 3.1.2.
   writer_guidance:
     <writer_guidance/>
 ```
@@ -149,8 +150,9 @@ from context:
 - <narrative_intent>
 - <core_concepts>
 - <engines>
+    - The selection rules are poorly defined and don't work at the moment
+    - This is for Sequential and Options modes around generation_prompt
 - <data_and_rules>
-- <input_extensions>
 - <additional_state>
 - <writer_guidance>
 - <character_schema>

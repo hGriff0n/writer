@@ -7,22 +7,28 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 
 # Refining Principles Approach
 - Try the principles prompt with the mara story
+  - Use this story to develop "premise" generation
 - Try the principles prompt with the thousand story
 - Try the principles prompt with the level story
 
 # Plot Points to Refinement
-- Migrate the historical progression narrative to engines in curse
+- Test out "generic" architect
+
+- Generalize "writer" of story-specific aspects
+  - Move "story-specific" data into story package and update the yaml and loaders
+- Make "generic" architect and writer prompts
+  - Writer needs a bit more story specific stuff iir
+
 - Work on adding events to the prompt handling
-- Work on establishing what a principle and rule is
-- Discuss about updating reality to events
-  - There are a couple aspects that don't align fully though
-- Rewrite curse and reality setups to new design
+- Work on establishing what a principle and rule ia
+- Split principles/etc. into explicit events (I don't have an explicit event system yet because everything is incorporated into principles/rules)
 
 # !!! Clean up the Presentation in CLI !!!
 - I was thinking about the story bible though that's only in ai studio
 
 # Experiment With Basic Prompts
 - What would happen if I just use a basic editor prompt
+- Migrate the historical progression narrative to engines in curse
 
 DSPy
 
@@ -50,12 +56,20 @@ Unfortunately, I deleted the chats in the history where I asked for the generic 
 
 ## Generalizing architect.md
 Intro: Common
-Core Principles: Completely story specific, starting on common principles
-Narrative Engines: Identified common elements, but mostly story specific
-Data: Completely story specific, not identified common themes
-Input Specification: Mostly common, want to have way of including story specific schema customizations
-Generation: Mostly common, minor story specifics in finalization
-Output: Almost common, just need story specific schemas
+Core Principles:
+  - Completely story specific, need definition
+Narrative Engines:
+  - Identified common elements, but mostly story specific
+Data:
+  - Completely story specific
+  - not identified common themes
+  - Can be a substate that introduces custom schema types
+Input Specification:
+  - Mostly common, want to have way of including story specific schema customizations
+Generation:
+  - Mostly common, minor story specifics in finalization
+Output:
+  - Almost common, just need story specific schemas
 
 ### From Doctors
 - 4/5 "Systems (for non-RPG)

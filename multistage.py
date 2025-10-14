@@ -9,6 +9,7 @@ from lib.ai import LlmEngine
 from lib.config import load_config, DataConstants
 
 from langchain_core.messages import AnyMessage, AIMessage, SystemMessage
+from langchain_core.prompts import PromptTemplate
 
 
 DEFS = DataConstants()
@@ -36,6 +37,18 @@ story = config.load_story(args.story)
 # multiple prompts? The former is required when using different models
 #
 
+# Assemble the prompt from a generic template
+# This uses a mix of `{template}` and xml tags
+p = PromptTemplate.from_template(config.load_prompt_file('architect'))
+arch_prompt = p.format(
+    narrative_intent=story.narrative_intent,
+    beat_assembly=story.generation,
+    core_concepts=story.core_concepts,
+    engines=story.engines,
+    rules=story.rules,
+    schema=story.schemas
+)
+
 # The architect is a multi-purpose agent dealing with all things about plot
 # direction. There are basically 3 modes: planning, options, and
 # translation. Planning pre-creates a sequence of `7` chapters whenever no
@@ -43,7 +56,7 @@ story = config.load_story(args.story)
 # dropped and the "translation" mode is used to produce an output that the
 # writer can use for generation. The user can also query the ai for some
 # options, which will provide `3` different ways for progressing the story
-architect = LlmEngine(config, args.profile, prompt=story.architect, temperature=0.4)
+architect = LlmEngine(config, args.profile, prompt=arch_prompt, temperature=0.4)
 
 # The writer is solely responsible for taking the plot beat provided by the
 # architect and expand it into an actual chapter of prose that extends the
@@ -77,11 +90,11 @@ EXTRA = "\npacing_modifier: 1" if story.title == 'reality' else ''
 
 # Helper method for splitting the next input from the existing plan.
 # If there are no planned inputs currently, this requests a new set 
-REQUEST_PLAN = f"""```yaml
+REQUEST_PLAN = f"""
 directive:
     mode: Sequential{EXTRA}
     count: 7
-```"""
+"""
 PLOT_PLAN = []
 def get_next_input_from_plan():
     global PLOT_PLAN
@@ -94,11 +107,11 @@ def get_next_input_from_plan():
 
 
 # Helper method for requesting potential next options from the planner
-CHOICE_PROMPT = f"""```yaml
+CHOICE_PROMPT = f"""
 directive:
     mode: Options{EXTRA}
     count: 3
-```"""
+"""
 def summarize_plot_beats(beats: List[str]) -> List[str]:
     return [o['beat_summary' if story.title == 'curse' else 'title'] for o in options]
 
@@ -134,8 +147,7 @@ else:
     plan = send_message(architect, START, arch_context)
 
     write_context: List[AnyMessage] = []
-    text = send_message(writer,
-                        f'```yaml\n{plan}```', write_context)
+    text = send_message(writer, plan, write_context)
     print(text)
 
 

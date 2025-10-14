@@ -10,7 +10,7 @@ import yaml
 
 def _strip_comments(data: str) -> str:
     idx = data.find('[[comments]]')
-    return data[:idx].strip()
+    return (data[:idx].strip() if idx != -1 else data)
 
 def _load_yaml(file):
     with open(file, 'r') as f:
@@ -62,9 +62,18 @@ class StoryFile:
         self._start = None
         self._lore = None
         self._plot = None
+        self._intent = None
+        self._generation = None
+        self._concepts = None
+        self._engines = None
+        self._rules = None
+        self._schemas = None
 
     def _load(self, file):
         return _load_markdown(f'{self._path}/{file}.md')
+    
+    def _load_all(self, files):
+        return '\n\n'.join(self._load(f) for f in files)
     
     @property
     def title(self) -> str:
@@ -93,6 +102,42 @@ class StoryFile:
         if not self._lore:
             self._lore = self._load(self._yaml['lore'])
         return self._lore
+
+    @property
+    def narrative_intent(self) -> str:
+        if not self._intent:
+            self._intent = self._load(self._yaml['narrative_intent'])
+        return self._intent
+
+    @property
+    def generation(self) -> str:
+        if not self._generation:
+            self._generation = self._load(self._yaml['generation'])
+        return self._generation
+
+    @property
+    def core_concepts(self) -> str:
+        if not self._concepts:
+            self._concepts = self._load_all(self._yaml['core_concepts'])
+        return self._concepts
+
+    @property
+    def engines(self) -> str:
+        if not self._engines:
+            self._engines = self._load_all(self._yaml['engines'])
+        return self._engines
+
+    @property
+    def rules(self) -> str:
+        if not self._rules:
+            self._rules = self._load_all(self._yaml['rules'])
+        return self._rules
+
+    @property
+    def schemas(self) -> str:
+        if not self._schemas:
+            self._schemas = self._load_all(self._yaml['schemas'])
+        return self._schemas
 
     @property
     def architect(self) -> str:

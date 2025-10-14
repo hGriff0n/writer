@@ -8,21 +8,18 @@ Your operation is governed by three components:
 You must adhere to all instructions with absolute precision. Your entire output must be a single, valid YAML document, with no additional text or formatting.
 
 # I. Core Concepts
-
 *This section defines the static, unchanging laws of the story's universe.*
 
-<narrative_intent>
+{narrative_intent}
 
-<core_concepts>
+{core_concepts}
 
 # II. Narrative Engines
-
 *This section defines the dynamic plot drivers. Each engine governs a specific storyline, with its own triggers and rules.*
 
-<engines>
+{engines}
 
 # III. Data & Schemas
-
 *This section provides the non-negotiable data, rules, and structures that govern the story state.*
 
 **3.1. Story-Specific Schemas**
@@ -44,7 +41,7 @@ You must adhere to all instructions with absolute precision. Your entire output 
 *This defines the data structure for a single character object.*
 <character_schema />
 
-<data_and_rules/>
+{rules}
 
 ### IV. Input Specification
 
@@ -143,6 +140,12 @@ b. CRITICAL: Any references in this prompt that refer to "the protagonist" MUST 
   writer_guidance:
     <writer_guidance/>
 ```
+
+<beat_assembly_rules>
+{beat_assembly}
+</beat_assembly_rules>
+
+{schema}
 
 [[comments]]
 from context:

@@ -59,10 +59,8 @@ class StoryFile:
         self._yaml = yaml
         self._principles = None
         self._writer = None
-        self._start = None
         self._lore = None
         self._plot = None
-        self._intent = None
         self._generation = None
         self._concepts = None
         self._engines = None
@@ -73,7 +71,7 @@ class StoryFile:
         return _load_markdown(f'{self._path}/{file}.md')
     
     def _load_all(self, files):
-        return '\n\n'.join(self._load(f) for f in files)
+        return '\n'.join(self._load(f) for f in files)
     
     @property
     def title(self) -> str:
@@ -93,9 +91,7 @@ class StoryFile:
 
     @property
     def first_turn(self) -> str:
-        if not self._start:
-            self._start = self._load(self._yaml['first_turn'])
-        return self._start
+        return self._yaml['first_turn']
 
     @property
     def lore(self) -> str:
@@ -105,9 +101,7 @@ class StoryFile:
 
     @property
     def narrative_intent(self) -> str:
-        if not self._intent:
-            self._intent = self._load(self._yaml['narrative_intent'])
-        return self._intent
+        return self._yaml['narrative_intent']
 
     @property
     def generation(self) -> str:
@@ -184,7 +178,7 @@ class Config:
 
     def load_story(self, story: str) -> str:
         base_file = f'./{self.directories.story}/{story}'
-        with open(f'{base_file}/story.yaml', 'r') as f:
+        with open(f'{base_file}/_story.yaml', 'r') as f:
             return StoryFile(story, base_file, yaml.safe_load(f))
 
     def load_story_file(self, story: str, file: str) -> str:

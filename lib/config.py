@@ -57,24 +57,24 @@ class StoryFile:
         self._story = story
         self._path = path
         self._yaml = yaml
-        self._schemas = None
-        self._rules = None
-        self._engines = None
-        self._concepts = None
-        self._generation = None
-        self._intent = None
-        self._start = None
+        self._principles = None
         self._writer = None
+        self._start = None
+        self._lore = None
+        self._plot = None
 
-    def _load(self, file: str):
+    def _load(self, file):
         return _load_markdown(f'{self._path}/{file}.md')
-
-    def _load_all(self, files: List[str]):
-        return [self._load(f) for f in files]
     
     @property
     def title(self) -> str:
         return self._story
+
+    @property
+    def principles(self) -> str:
+        if not self._principles:
+            self._principles = self._load(self._yaml['principles'])
+        return self._principles
 
     @property
     def writer(self) -> str:
@@ -89,40 +89,16 @@ class StoryFile:
         return self._start
 
     @property
-    def narrative_intent(self) -> str:
-        if not self._intent:
-            self._intent = self._load(self._yaml['first_turn'])
-        return f'<narrative_intent>{self._intent}</narrative_intent>'
-    
+    def lore(self) -> str:
+        if not self._lore:
+            self._lore = self._load(self._yaml['lore'])
+        return self._lore
+
     @property
-    def beat_assembly(self) -> str:
-        if not self._generation:
-            self._generation = self._load(self._yaml['generation'])
-        return f'<beat_assembly_rules>{self._generation}</beat_assembly_rules>'
-    
-    @property
-    def core_concepts(self) -> str:
-        if not self._concepts:
-            self._concepts = self._load_all(self._yaml['core_concepts'])
-        return f'<core_concepts>{'\n\n'.join(self._concepts)}</core_concepts>'
-    
-    @property
-    def engines(self) -> str:
-        if not self._engines:
-            self._engines = self._load_all(self._yaml['engines'])
-        return f'<engines>{'\n\n'.join(self._engines)}</engines>'
-    
-    @property
-    def rules(self) -> str:
-        if not self._rules:
-            self._rules = self._load_all(self._yaml['rules'])
-        return f'<data_and_rules>{'\n\n'.join(self._rules)}</data_and_rules>'
-    
-    @property
-    def schemas(self) -> str:
-        if not self._schemas:
-            self._schemas = self._load_all(self._yaml['schemas'])
-        return '\n\n'.join(self._schemas)
+    def architect(self) -> str:
+        if not self._plot:
+            self._plot = self._load(self._yaml['plot'])
+        return self._plot
 
 
 # For user-specific configurations (also ai profiles)

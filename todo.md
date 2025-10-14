@@ -12,15 +12,12 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Try the principles prompt with the level story
 
 # Plot Points to Refinement
-- Fix reality issue: Lost in-world amnesia
-- Fix Invalid YAML generation at times
+- Test out "generic" architect
 
 - Generalize "writer" of story-specific aspects
-  - Needs to get schema from the same context files as architect
-    - Is it possible to rephrase some aspects to core concepts?
-    - Do I even need to communicate schemas in the writer?
+  - Move "story-specific" data into story package and update the yaml and loaders
+- Make "generic" architect and writer prompts
   - Writer needs a bit more story specific stuff iir
-  - Potential to make writer-story specific?
 
 - Work on adding events to the prompt handling
 - Work on establishing what a principle and rule ia

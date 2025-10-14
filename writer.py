@@ -2,12 +2,14 @@
 from argparse import ArgumentParser
 import json
 import re
-from typing import List
+from typing import Dict, List, Tuple
+import yaml
 
 from lib.ai import LlmEngine
 from lib.config import load_config, DataConstants
 
 from langchain_core.messages import AnyMessage, AIMessage, SystemMessage
+from langchain_core.prompts import PromptTemplate
 
 
 DEFS = DataConstants()
@@ -26,103 +28,134 @@ parser.add_argument('-c', '--resume', action='store_true')
 # Initialize chat app
 args = parser.parse_args()
 config = load_config(DEFS)
-model = LlmEngine(config, args.profile, args.prompt)
+story = config.load_story(args.story)
 
-# https://www.philschmid.de/gemini-langchain-cheatsheet#google-gemini-with-langchain-chat-models
+#
+# The current `LlmEngine` approach "assumes" one prompt per llm
+# Which has downsides (such as this) and upsides (cleaner calling, mostly)
+# Is it better to have one engine per prompt, or reuse the same engine for
+# multiple prompts? The former is required when using different models
+#
 
-# https://langchain-ai.github.io/langgraph/tutorials/get-started/1-build-basic-chatbot/
-# https://python.langchain.com/docs/introduction/
+# Assemble the prompt from a generic template
+# This uses a mix of `{template}` and xml tags
+p = PromptTemplate.from_template(config.load_prompt_file('architect'))
+arch_prompt = p.format(
+    narrative_intent=story.narrative_intent,
+    beat_assembly=story.generation,
+    core_concepts=story.core_concepts,
+    engines=story.engines,
+    rules=story.rules,
+    schema=story.schemas
+)
+
+# The architect is a multi-purpose agent dealing with all things about plot
+# direction. There are basically 3 modes: planning, options, and
+# translation. Planning pre-creates a sequence of `7` chapters whenever no
+# input is provided. If the user inputs a change of their own, the plan is
+# dropped and the "translation" mode is used to produce an output that the
+# writer can use for generation. The user can also query the ai for some
+# options, which will provide `3` different ways for progressing the story
+architect = LlmEngine(config, args.profile, prompt=arch_prompt, temperature=0.4)
+
+# The writer is solely responsible for taking the plot beat provided by the
+# architect and expand it into an actual chapter of prose that extends the
+# story it is currently writing
+writer = LlmEngine(config, args.profile, prompt=story.writer, temperature=1.7)
 
 
 #
 # Wrapper for sending a message to the llm
 #
-# Also automatically records a history of all chat communications to a log file
-# so that I can easily upload these to an analysis prompt that can identify was
-# of improving the initial prompt (based on the corrections I had to make)
-#
-# This automatically truncates the provided context to the last response
-# from the model.
-# TODO: me - The truncation works for now, because the story concept
-# I'm testing is episodic and doesn't need more history
-#
-def send_message(message: str,
+def send_message(llm: LlmEngine, message: str,
                  context: List[AnyMessage]) -> str:
     if context is None:
         raise Exception("Context must be specified")
 
     # Assemble prompt and context
     # TODO: me - Eventually use more memory channels
-    input = [SystemMessage(content=model.prompt)]
+    input = [SystemMessage(content=llm.prompt)]
     if context:
         input.append(SystemMessage(
-            f'<story_so_far>{context[-1].content}</story_so_far'))
+            f'NARRATIVE CONTEXT: {context[-1].content}'))
     context.clear()
     context.extend(input)
 
     # Call the llm and record the request in the chat-log
-    return model.invoke(message, context)
+    return llm.invoke(message, context)
 
 
-# Probably a better way of doing this, but . not matching whitespace???
-def extract_tag(text, tag):
-    regex = f'(<{tag}>(?:(?!</{tag}).|[\r\n ])*</{tag}>)'
-    m = re.search(regex, text)
-    print(m.group(1))
-    return text.replace(m.group(1), ''), m.group(1)
+# TODO: me - Figure out a way to control pacing generically
+EXTRA = "\npacing_modifier: 1" if story.title == 'reality' else ''
+
+# Helper method for splitting the next input from the existing plan.
+# If there are no planned inputs currently, this requests a new set 
+REQUEST_PLAN = f"""
+directive:
+    mode: Sequential{EXTRA}
+    count: 7
+"""
+PLOT_PLAN = []
+def get_next_input_from_plan():
+    global PLOT_PLAN
+    if not PLOT_PLAN:
+        plan = send_message(architect, REQUEST_PLAN, write_context)
+        PLOT_PLAN = [yaml.safe_dump(o) for o in next(yaml.safe_load_all(plan))]
+    
+    prompt, PLOT_PLAN = PLOT_PLAN[0], PLOT_PLAN[1:]
+    return prompt
 
 
-#
-# Simple helper for introducing some ai help with next direction
-# Eventually, this'll become a full-fledged GM system
-#
-CHOICE_PROMPT = config.load_story_file(args.story, 'choices')
-def ask_for_ideas(context: List[AnyMessage]):
-    return model.ask_for_help(CHOICE_PROMPT, context)
+# Helper method for requesting potential next options from the planner
+CHOICE_PROMPT = f"""
+directive:
+    mode: Options{EXTRA}
+    count: 3
+"""
+def summarize_plot_beats(beats: List[str]) -> List[str]:
+    return [o['beat_summary' if story.title == 'curse' else 'title'] for o in options]
+
+def ask_for_ideas(context: List[AnyMessage]) -> Tuple[List[str], List[str]]:
+    output = send_message(architect, CHOICE_PROMPT, context)
+    options = next(yaml.safe_load_all(output))
+    return summarize_plot_beats(options), [yaml.safe_dump(o) for o in options]
 
 
-# The way this will transform to multi-agent up to here is somewhat obvious
-# The world generator and librarian agents, plus maybe a story planner, work
-# together to develop the input to this prompt stage
-#
-# But where things go after that is unknown. This approach is good for
-# episodic stories, potentially for RPG systems, but not full novels
-
-#
-# Preparing initial story context
-# TODO: me - Add error handling when file doesn't exist
-# I'm not sure what that would be
-#
-context: List[AnyMessage] = []
-constraints = config.load_story_file(args.story, 'constraints')
+# TODO: me - would this need to parsed into yaml?
+# Allow for resuming an in-progress story
 if args.resume:
     print("Loading in-progress story...")
-    file = f'{config.directories.story}/{args.story}/tmp.json'
+    file = f'{config.directories.story}/{story.title}/principles/tmp.json'
     with open(file, 'r', encoding='utf-8') as f:
         story = json.load(f)
     
     print("Restoring prior context...")
-    model.chat_log.conversation.extend({"role": "AI", "msg": chap} for chap in story['chapters'])
-    context = [AIMessage(content=model.chat_log.conversation[-1]['msg'])]
+    writer.chat_log.conversation.extend({"role": "AI", "msg": chap} for chap in story['chapters'])
+    write_context = [AIMessage(content=story['chapters'][-1])]
+
+    print(f"Restoring current plan...")
+    PLOT_PLAN = story.get('plan', [])
 
     print(f"Loaded previous story from {file}")
+    print(write_context[0].content)
 
+# Otherwise we're starting a new story, so simply load up the default
+# start command and start writing automatically.
 else:
-    # Otherwise we're starting a new story, so simply load up the default
-    # start command and start writing automatically.
-    scene = config.load_story_file(args.story, 'start')
-    initial_story_bible = config.load_story_file(args.story, 'lorebook')
-    response = send_message(
-        f'Plot Direction: {scene}\n{constraints}\n<story_bible>{initial_story_bible}</story_bible>', context
-    )
-    print(response)
+    START = story.first_turn
+    arch_context: List[AnyMessage] = []
+    plan = send_message(architect, START, arch_context)
 
+    write_context: List[AnyMessage] = []
+    text = send_message(writer, plan, write_context)
+    print(text)
 
 
 #
 # Keep writing until you want to stop
 #
 # At the moment, there are two "commands":
+#   - whereami, /context: print prior chapter
 #   - exit, /finish: stop the loop
 #   - help, /help: request ai help for generating next actions
 #
@@ -132,27 +165,41 @@ while True:
     prompt = input("Change> ").strip()
     if prompt == "exit" or prompt == "/finish":
         break
-    if prompt in ["help", "/help"]:
-        print(ask_for_ideas(context))
-        continue
     if prompt in ["whereami", "/context"]:
-        print(context[-1].content)
+        print(write_context[-1].content)
+        continue
+    if prompt in ["help", "/help"]:
+        PLOT_PLAN.clear()
+        display, options = ask_for_ideas(write_context)
+        print(f'A: {display[0]}')
+        print(f'B: {display[1]}')
+        print(f'C: {display[2]}')
+        choice = input("Select Option (A/B/C)>").lower()
+        prompt = {'a': options[0], 'b': options[1], 'c': options[2]}[choice]
+    if prompt in ["plan", "/plan"]:
+        print('- ' + '\n- '.join(summarize_plot_beats(PLOT_PLAN)))
         continue
 
-    # Need a better way to continue on from the previous location
-    response = send_message(
-        f'Plot Direction: {prompt}\n{constraints}', context)
+    # Allow for planning of plot events
+    if not prompt:
+        prompt = get_next_input_from_plan()
+    else:
+        PLOT_PLAN.clear()
+    response = send_message(writer, prompt, write_context)
     print(response)
+
 
 # Store the conversation in a per-run file so we can easily send it to
 # other prompts for improvements/etc.
-print(f'Cost of Run: {model.est_cost()}')
-chat_file = model.chat_log.save(config.output_dir)
+print(f'Cost of Run: {writer.est_cost() + architect.est_cost()}')
+chat_file = writer.chat_log.save(config.output_dir)
+arch_file = architect.chat_log.save(config.output_dir)
+
 
 # TODO: me - What does this do that's not already in the chat log?
 # Aside from saving in the same location as the story files ???
 # Save the current state of generation in a temp file in the story directory
 # This is to enable continuations through the --resume flag
-story = [response for response in model.chat_log.having_role('AI')]
-with open(f'./{config.directories.story}/{args.story}/tmp.json', 'w', encoding='utf-8') as f:
-    json.dump({ 'chapters': story, 'chat_log': chat_file }, f, ensure_ascii=False, indent=4)
+book = [response for response in writer.chat_log.having_role('AI')]
+with open(f'./{config.directories.story}/{story.title}/tmp.json', 'w', encoding='utf-8') as f:
+    json.dump({ 'chapters': book, 'writer_file': chat_file, 'architect': arch_file, 'plan': PLOT_PLAN }, f, ensure_ascii=False, indent=4)

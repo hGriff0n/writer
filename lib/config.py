@@ -183,7 +183,7 @@ class Config:
             return _strip_comments(f.read())
 
     def load_story(self, story: str) -> str:
-        base_file = f'./{self.directories.story}/{story}/principles'
+        base_file = f'./{self.directories.story}/{story}'
         with open(f'{base_file}/story.yaml', 'r') as f:
             return StoryFile(story, base_file, yaml.safe_load(f))
 

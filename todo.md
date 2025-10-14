@@ -17,8 +17,7 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Investigate alternative ways of providing context via LangChain
   - https://python.langchain.com/docs/how_to/output_parser_yaml/
     - migrate schemas to structured output
-
-- Need to migrate story context to yaml
+  - Need to migrate story context to yaml
 
 - Fix reality issue: Lost in-world amnesia
   - Not fully following writer prompts

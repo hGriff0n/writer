@@ -136,15 +136,15 @@ class LlmEngine:
     # Profiles actually
     @staticmethod
     def supported_models():
-        return ['gemini', 'openai']
+        return ['gemini', 'openai', 'gemini-flash']
 
     DEFAULT_MODEL = 'gemini'
 
-    def __init__(self, config: Config, model: str, prompt_file: str = None, prompt: str = None, *args, **kwargs):
+    def __init__(self, config: Config, model: str, prompt_file: str = None, prompt: str = None, flash: bool = False, *args, **kwargs):
         # Resolve the selected model, allowing for model to actually indicate
         # a profile which auto-includes specific model settings
-        self._model_name = model
-        profile = config.ai_profiles.get(model)
+        self._model_name = model + (flash and '-flash' or '')
+        profile = config.ai_profiles.get(self._model_name)
         if profile:
             self._model_name = profile['model_name']
         self._model_config = config.constants.get_config_for_model(
@@ -153,6 +153,7 @@ class LlmEngine:
             raise Exception(
                 f'Attempt to load unsupported mode: {self._model_name}')
 
+        print(f'Creating model `{self._model_name}`: {self._model_config}')
         # Setup the rest of the engine.
         self._llm = init_model(self._model_config)
         self._prompt = prompt if prompt else config.load_prompt_file(prompt_file)

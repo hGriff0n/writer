@@ -10,6 +10,8 @@ from lib.config import load_config, DataConstants
 
 from langchain_core.messages import AnyMessage, AIMessage, SystemMessage
 from langchain_core.prompts import PromptTemplate
+from langchain_core.rate_limiters import InMemoryRateLimiter
+
 
 
 DEFS = DataConstants()
@@ -23,6 +25,7 @@ parser.add_argument('-m', '--profile',
 parser.add_argument('-p', '--prompt',
                     choices=['simple_writer'], default='simple_writer')
 parser.add_argument('-c', '--resume', action='store_true')
+parser.add_argument('-r', '--runs', type=int, default=0)
 
 
 # Initialize chat app
@@ -56,12 +59,28 @@ arch_prompt = p.format(
 # dropped and the "translation" mode is used to produce an output that the
 # writer can use for generation. The user can also query the ai for some
 # options, which will provide `3` different ways for progressing the story
-architect = LlmEngine(config, args.profile, prompt=arch_prompt, temperature=0.4)
+# Gemma is not as capable at following the instructions
+# https://ai.google.dev/gemini-api/docs/rate-limits
+pro_limiter = InMemoryRateLimiter(
+    requests_per_second=2 / 60,  # 5 RPM for 2.5pro (so the docs say)
+    check_every_n_seconds=0.1,  # Wake up every 100 ms
+    max_bucket_size=5,
+)
+architect = LlmEngine(config, args.profile, prompt=arch_prompt, temperature=0.4, rate_limiter=pro_limiter)
 
 # The writer is solely responsible for taking the plot beat provided by the
 # architect and expand it into an actual chapter of prose that extends the
 # story it is currently writing
-writer = LlmEngine(config, args.profile, prompt=story.writer, temperature=1.7)
+# Gemma is not as capable at writing, but flash is
+# Finetunes??? https://huggingface.co/ToastyPigeon/Gemma-3-Starshine-12B
+# Or other models: https://eqbench.com/creative_writing.html (Kimi)
+# Or Gemma 2: https://huggingface.co/lemon07r/Gemma-2-Ataraxy-9B
+flash_limiter = InMemoryRateLimiter(
+    requests_per_second=10 / 60,  # 10 RPM for 2.5flash
+    check_every_n_seconds=0.1,    # Wake up every 100 ms
+    max_bucket_size=5,
+)
+writer = LlmEngine(config, args.profile, prompt=story.writer, temperature=1.7, flash=True)
 
 
 #
@@ -142,6 +161,7 @@ if args.resume:
 # Otherwise we're starting a new story, so simply load up the default
 # start command and start writing automatically.
 else:
+    print("Starting first turn")
     START = story.first_turn
     arch_context: List[AnyMessage] = []
     plan = send_message(architect, START, arch_context)
@@ -149,6 +169,22 @@ else:
     write_context: List[AnyMessage] = []
     text = send_message(writer, plan, write_context)
     print(text)
+
+
+# If the `runs` parameter was set, automate the process
+# Technically, this actually produces args + 1 chapters
+if args.runs > 0:
+    import time
+    for i in range(0, args.runs):
+        print(f'Writing chapter {i} out of {args.runs}...')
+        prompt = get_next_input_from_plan()
+        response = send_message(writer, prompt, write_context)
+        print(f'Completed chapter {i} out of {args.runs}...')
+        time.sleep(12)
+    book = [response for response in writer.chat_log.having_role('AI')]
+    with open('./tmp/book.txt', 'w') as f:
+        f.write('\n---\n'.join(book))
+    print(f'Finished writing {args.runs} chapters to ./tmp/book.txt')
 
 
 #
@@ -161,32 +197,33 @@ else:
 #
 # All other input is sent directly to the model as the 'Plot Direction'
 # along with the story constraints. History is provided through context
-while True:
-    prompt = input("Change> ").strip()
-    if prompt == "exit" or prompt == "/finish":
-        break
-    if prompt in ["whereami", "/context"]:
-        print(write_context[-1].content)
-        continue
-    if prompt in ["help", "/help"]:
-        PLOT_PLAN.clear()
-        display, options = ask_for_ideas(write_context)
-        print(f'A: {display[0]}')
-        print(f'B: {display[1]}')
-        print(f'C: {display[2]}')
-        choice = input("Select Option (A/B/C)>").lower()
-        prompt = {'a': options[0], 'b': options[1], 'c': options[2]}[choice]
-    if prompt in ["plan", "/plan"]:
-        print('- ' + '\n- '.join(summarize_plot_beats(PLOT_PLAN)))
-        continue
+else:
+    while True:
+        prompt = input("Change> ").strip()
+        if prompt == "exit" or prompt == "/finish":
+            break
+        if prompt in ["whereami", "/context"]:
+            print(write_context[-1].content)
+            continue
+        if prompt in ["help", "/help"]:
+            PLOT_PLAN.clear()
+            display, options = ask_for_ideas(write_context)
+            print(f'A: {display[0]}')
+            print(f'B: {display[1]}')
+            print(f'C: {display[2]}')
+            choice = input("Select Option (A/B/C)>").lower()
+            prompt = {'a': options[0], 'b': options[1], 'c': options[2]}[choice]
+        if prompt in ["plan", "/plan"]:
+            print('- ' + '\n- '.join(summarize_plot_beats(PLOT_PLAN)))
+            continue
 
-    # Allow for planning of plot events
-    if not prompt:
-        prompt = get_next_input_from_plan()
-    else:
-        PLOT_PLAN.clear()
-    response = send_message(writer, prompt, write_context)
-    print(response)
+        # Allow for planning of plot events
+        if not prompt:
+            prompt = get_next_input_from_plan()
+        else:
+            PLOT_PLAN.clear()
+        response = send_message(writer, prompt, write_context)
+        print(response)
 
 
 # Store the conversation in a per-run file so we can easily send it to

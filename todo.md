@@ -1,34 +1,40 @@
 
 https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 
+# [PRIME] Experiment with initial agentic system
+- Implement Rate-Limiting Handlers (or upgrade to paid tier, or start https://vast.ai/)
+- Implement an iterative agent with critique
+  - ReAct (very similar to what I have now)
+    - Because I handle "", I can technically automate this to a point
+  - Plan and Execute (an adaptation on the architect pattern)
+  - Reflection
+    - Basically incorporating my feedback system
+    - https://medium.com/aimonks/reflection-agents-with-langgraph-agentic-llm-based-applications-87e43c27adc7
+- Use repeated iteration to build longer novel-form scenes
+  - https://aistudio.google.com/app/prompts/179Q4SpXMnAfGWaw_M8E_HiqobQcFIQ8g
+- Implement a tool calling agent
+  - Using skills check in agent.py
+
 # Agentic Extensions
 - Implement RAG agent
-- Implement skills check agent
-- Implement an iterative agent with critique
+- Implement world character db (with game state)
+  - Building skill check to full model system
 
 # Refining Principles Approach
 - Try the principles prompt with the mara story
+  - Create a better version of "context_generator" for the split workflow
   - Use this story to develop "premise" generation
   - I need to define what each tag means
 - Try the principles prompt with the thousand story
 - Try the principles prompt with the level story
-
-# Plot Points to Refinement
-- Investigate alternative ways of providing context via LangChain
-  - https://python.langchain.com/docs/how_to/output_parser_yaml/
-    - migrate schemas to structured output
-  - Need to migrate story context to yaml
-
-- Fix reality issue: Lost in-world amnesia
-  - Not fully following writer prompts
-- Fix curse issue: Writer output to json????
-
-- Generalize "writer" of story-specific aspects
-  - Experiment with general writer
-  - Experiment with optimized writer
-    - Might be worth just leaving the writer as "story-specific" for now
+  - This story is effectively an actual game
 
 # Building on the general principles
+- Refining multistage approach
+  - Plot planner => scene bullet points
+    - How do I do this while maintaining reactions/etc. continuity?
+  - scene bullet points => annotated scene script
+  - scene script can be passed to focused writers
 - Work on adding events to the prompt handling
 - Work on establishing what a principle and rule is
 - Split principles/etc. into explicit events (I don't have an explicit event system yet because everything is incorporated into principles/rules)
@@ -37,15 +43,18 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - I want detailed novel like prose
 - I'm thinking keeping tracking of progression and having a "give next part"
 
-# Cleaning up some minor misses
-- Build `story_state` from response
-
 # !!! Clean up the Presentation in CLI !!!
 - I was thinking about the story bible though that's only in ai studio
 
 # Experiment With Basic Prompts
 - What would happen if I just use a basic editor prompt
 - Migrate the historical progression narrative to engines in curse
+
+# Plot Points to Refinement
+- https://python.langchain.com/docs/how_to/output_parser_yaml/
+  - migrate schemas to structured output
+- Need to migrate story context to yaml
+  - Build `story_state` from response
 
 DSPy
 

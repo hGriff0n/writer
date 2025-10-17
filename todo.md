@@ -1,24 +1,33 @@
 
 https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
+- Investigate upgrading to paid tier (OR https://vast.ai/): paid
 
 # [PRIME] Experiment with initial agentic system
-- Implement Rate-Limiting Handlers (or upgrade to paid tier, or start https://vast.ai/)
-- Implement an iterative agent with critique
-  - ReAct (very similar to what I have now)
-    - Because I handle "", I can technically automate this to a point
-  - Plan and Execute (an adaptation on the architect pattern)
-  - Reflection
-    - Basically incorporating my feedback system
+- I can recast the entire "repl" into a simple agent
+  - overkill, but'll help with experience
+  - but there is a gain from auto-binding the planner and writer
+  - https://docs.langchain.com/oss/python/langgraph/workflows-agents
+- Develop reviewer prompt into a very detailed analaysis and editor agent
+  - Implement into a Reflection agent
     - https://medium.com/aimonks/reflection-agents-with-langgraph-agentic-llm-based-applications-87e43c27adc7
-- Use repeated iteration to build longer novel-form scenes
-  - https://aistudio.google.com/app/prompts/179Q4SpXMnAfGWaw_M8E_HiqobQcFIQ8g
-- Implement a tool calling agent
-  - Using skills check in agent.py
+- Implement an iterative agent with critique
+  - Plan and Execute (an adaptation on the architect pattern)
+- Develop a very basic prompt to test out tool calling
+  - Using skills checks in agent.py
+- Implement Basic RAG agent w/ vector store and World DB
+
+# [SECONDARY] Identifying Building Blocks
+- What is an event/principle/generation/etc.
+- Can we make a prompt that would extract these from the premise?
+  - https://aistudio.google.com/app/prompts/1DLUcWEu7F5Mb9U8T4PdYKAgLu06CMklC
+  - https://aistudio.google.com/app/prompts/1iUYjJW8cjYfuykkTgq2xWEoGkYy-KnE7
+  - Doesn't fully work, especially with schemas
+- Work on establishing what a principle and rule is
 
 # Agentic Extensions
-- Implement RAG agent
 - Implement world character db (with game state)
   - Building skill check to full model system
+- https://www.google.com/search?q=custom+storytelling+world+agent&oq=custom+storytelling+world+agent&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIHCAEQIRigATIHCAIQIRigATIHCAMQIRigAdIBCDUyMjBqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8
 
 # Refining Principles Approach
 - Try the principles prompt with the mara story
@@ -36,15 +45,20 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
   - scene bullet points => annotated scene script
   - scene script can be passed to focused writers
 - Work on adding events to the prompt handling
-- Work on establishing what a principle and rule is
 - Split principles/etc. into explicit events (I don't have an explicit event system yet because everything is incorporated into principles/rules)
 
 # Long Form Text Generation
+- Use repeated iteration to build longer novel-form scenes
+  - https://aistudio.google.com/app/prompts/179Q4SpXMnAfGWaw_M8E_HiqobQcFIQ8g
+- Can maybe explore some of the eqbench framework
 - I want detailed novel like prose
 - I'm thinking keeping tracking of progression and having a "give next part"
+- More planning outlines (read papers?)
 
 # !!! Clean up the Presentation in CLI !!!
 - I was thinking about the story bible though that's only in ai studio
+- Rewrite LlmEngine in terms of `create_agent`??
+  - Allows for dynamic model selection if needed
 
 # Experiment With Basic Prompts
 - What would happen if I just use a basic editor prompt
@@ -81,32 +95,45 @@ Long Term:
 Unfortunately, I deleted the chats in the history where I asked for the generic writer
 
 ### From Doctors
+- https://aistudio.google.com/app/prompts/1PS9dlP3vw7CKXIlfZkNLOSUBoAZzoHIc
 - 4/5 "Systems (for non-RPG)
-  - Principles/Concepts - ???
-  - Events/Triggers - If This Then That
-    - Condition
-    - Outcome
-    - Repeated
+  - Principles/Concepts - Reference for Intended World/Plot/Emotional Outcomes
+    - Basically "Setting the scene" on which all other aspects work
+    - Everything else is basically trying to implement these aspects
+    - Effectively operate as a review document for identifying compliance
+  - Narrative Rules
+    - Translation of some qualitative principles into quantitative actions
+    - Basically a library of tools for other aspects to utilize
+    - TODO: Skill checks and other mechanics and tools would reside here
   - Engines - Responsible for managing a specific aspect of plot advancement
+    - Effectively work as "plot advocates", promoting a specific action for the next turn (based on the current/recent plot events)
+    - Later resolution stages are responsible for weeding the actions into a cohesive and digestable narrative
+    - Internally function as a state machine, so have a large overlap with events
+  - Events/Triggers - If This Then That (unimplemented)
+    - Way of modifying the prompt data in response to runtime events
+    - Can be a useful way for achieving context management
+    - Made of a Condition, an Outcome, and a "IsRepeated" flag
+  - Beat Generation
+    - Takes a proposal document and transforms it into an actionable prose request for the writer
+  - Other
+    - Data - History+Lore+WorldState (unimplemented)
+      - Librarian/RAG
+      - World Generator
+      - Lore Researcher
+      - Summarizer/Context
+    - Writer (unspecified)
+      - Voice/styles (more writer customization)
+      - Long Form
+      - Extending/replacing/rewriting (separate agent)
+    - And a bunch of uncategorized stuff...
+      - Characters
+      - Options/Choices/Planning (separate agent)
+  - Potential engines
     - Story Promises++
     - "Travel Agent" - Responsible for ensuring group arrives on time
     - "World Agent" - Simulating world stuff, or maybe that's a character
     - "Antagonist"
     - Director
-  - Data - History+Lore+WorldState
-    - Librarian/RAG
-    - World Generator
-    - Lore Researcher
-    - Summarizer/Context
-  - Functions - SkillChecks/Mechanics
-    - Style Prohibitions?
-  - Principles
-  - And a bunch of uncategorized stuff...
-    - Characters
-    - Voice/styles (more writer customization)
-    - Options/Choices/Planning (separate agent)
-    - Long Form
-    - Extending/replacing/rewriting (separate agent)
 
 ### Engines
 - Also the generation of choices and options

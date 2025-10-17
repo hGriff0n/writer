@@ -115,11 +115,15 @@ directive:
     count: 7
 """
 PLOT_PLAN = []
+def request_new_plan():
+    global PLOT_PLAN
+    plan = send_message(architect, REQUEST_PLAN, write_context)
+    PLOT_PLAN = [yaml.safe_dump(o) for o in next(yaml.safe_load_all(plan))]
+
 def get_next_input_from_plan():
     global PLOT_PLAN
     if not PLOT_PLAN:
-        plan = send_message(architect, REQUEST_PLAN, write_context)
-        PLOT_PLAN = [yaml.safe_dump(o) for o in next(yaml.safe_load_all(plan))]
+        request_new_plan()
     
     prompt, PLOT_PLAN = PLOT_PLAN[0], PLOT_PLAN[1:]
     return prompt
@@ -132,7 +136,7 @@ directive:
     count: 3
 """
 def summarize_plot_beats(beats: List[str]) -> List[str]:
-    return [o['beat_summary' if story.title == 'curse' else 'title'] for o in options]
+    return [o['beat_summary' if story.title == 'curse' else 'title'] for o in beats]
 
 def ask_for_ideas(context: List[AnyMessage]) -> Tuple[List[str], List[str]]:
     output = send_message(architect, CHOICE_PROMPT, context)
@@ -171,6 +175,17 @@ else:
     print(text)
 
 
+# TODO: me - This is the closest thing I have to the approach I want
+# but I don't know yet how to manage the state
+# from langgraph.graph import END, MessageGraph
+# MessageGraph()
+
+# builder = MessageGraph()
+# builder.add_node("generate", generation_node)
+# builder.add_node("reflect", reflection_node)
+# builder.set_entry_point("generate")
+# https://docs.langchain.com/oss/python/langgraph/thinking-in-langgraph
+
 # If the `runs` parameter was set, automate the process
 # Technically, this actually produces args + 1 chapters
 if args.runs > 0:
@@ -182,7 +197,7 @@ if args.runs > 0:
         print(f'Completed chapter {i} out of {args.runs}...')
         time.sleep(12)
     book = [response for response in writer.chat_log.having_role('AI')]
-    with open('./tmp/book.txt', 'w') as f:
+    with open('./.tmp/book.txt', 'w') as f:
         f.write('\n---\n'.join(book))
     print(f'Finished writing {args.runs} chapters to ./tmp/book.txt')
 
@@ -214,6 +229,8 @@ else:
             choice = input("Select Option (A/B/C)>").lower()
             prompt = {'a': options[0], 'b': options[1], 'c': options[2]}[choice]
         if prompt in ["plan", "/plan"]:
+            if not PLOT_PLAN:
+                request_new_plan()
             print('- ' + '\n- '.join(summarize_plot_beats(PLOT_PLAN)))
             continue
 

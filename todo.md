@@ -17,12 +17,28 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Implement Basic RAG agent w/ vector store and World DB
 
 # [SECONDARY] Identifying Building Blocks
-- What is an event/principle/generation/etc.
-- Can we make a prompt that would extract these from the premise?
-  - https://aistudio.google.com/app/prompts/1DLUcWEu7F5Mb9U8T4PdYKAgLu06CMklC
-  - https://aistudio.google.com/app/prompts/1iUYjJW8cjYfuykkTgq2xWEoGkYy-KnE7
-  - Doesn't fully work, especially with schemas
-- Work on establishing what a principle and rule is
+- Work on building a full story spec extrapolation workflow
+  - https://aistudio.google.com/app/prompts/1uhpjcEzT_c8XA_56_IiDYs0xyekQ0d1-
+  - https://aistudio.google.com/app/prompts/1OyQ0kPEE2V3T8tAYRX1HdGiJIOXI8JIt
+- Assemble the orchestrator into a prompt
+  - Just need to integrate the specs with the full orchestrator prompt
+  - The orchestrator/specialist pairing seems very promising
+    - Though some of the specs aren't assuming it
+  - Just need
+    1. Attach modules/skills for producing the specific narrative items
+    2. Split the specialist into a separate agent with handoffs
+- Would be a good idea to make an agent specifically for understanding this process and all of it's interactions (could be good for adding new features)
+
+- Orchestrator Key Parts:
+  - Conversational Model
+  - Background Processing and Synthesis
+  - Deep Dive Handoff Procedure
+  - Output Aspects
+    - Engines
+    - Concepts
+    - Rules
+    - Generation
+    - Writer
 
 # Agentic Extensions
 - Implement world character db (with game state)
@@ -30,20 +46,15 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - https://www.google.com/search?q=custom+storytelling+world+agent&oq=custom+storytelling+world+agent&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIHCAEQIRigATIHCAIQIRigATIHCAMQIRigAdIBCDUyMjBqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8
 
 # Refining Principles Approach
-- Try the principles prompt with the mara story
-  - Create a better version of "context_generator" for the split workflow
-  - Use this story to develop "premise" generation
-  - I need to define what each tag means
-- Try the principles prompt with the thousand story
-- Try the principles prompt with the level story
-  - This story is effectively an actual game
+- Use the new workflow for the reality story
+- Use the new workflow for the curse story
+- Use the new workflow for the late story
+- Use the new workflow for the mara story
+- Use the new workflow for the thousand story
+- Use the new workflow for the level story
+  - this is actually a game, so may need some adjustments
 
 # Building on the general principles
-- Refining multistage approach
-  - Plot planner => scene bullet points
-    - How do I do this while maintaining reactions/etc. continuity?
-  - scene bullet points => annotated scene script
-  - scene script can be passed to focused writers
 - Work on adding events to the prompt handling
 - Split principles/etc. into explicit events (I don't have an explicit event system yet because everything is incorporated into principles/rules)
 
@@ -54,6 +65,11 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - I want detailed novel like prose
 - I'm thinking keeping tracking of progression and having a "give next part"
 - More planning outlines (read papers?)
+- Refining multistage approach
+  - Plot planner => scene bullet points
+    - How do I do this while maintaining reactions/etc. continuity?
+  - scene bullet points => annotated scene script
+  - scene script can be passed to focused writers
 
 # !!! Clean up the Presentation in CLI !!!
 - I was thinking about the story bible though that's only in ai studio
@@ -73,29 +89,24 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 DSPy
 
 
-a. Formalizing world building procedure into specific prompt
-    - Principles to plot beat scheduler went ok
-    - https://aistudio.google.com/app/prompts/1TfQ0X81epFXMMHLU204klSh_v8g_nYp-
-    - Current principles workflow will miss a few aspects
-        - https://aistudio.google.com/app/prompts/1XZLvOcTQf1ST4TocdfSz57QWPxlWdNBC
-    - principles > architect > writer
-
 - Rules may also be useful as a way of "extending schemas" so that I can make the yaml fully general?
   - Would it be possible to using "typed yaml"?
     - Say that this schema applies to `X` fields
     - Then use the `<field>: [X]` to apply the schema
   - This might also imply that schema is a separate category
 
-
 Long Term:
   Local GPU
   API Usage
   Hosted GPU: https://vast.ai/
 
-Unfortunately, I deleted the chats in the history where I asked for the generic writer
-
 ### From Doctors
 - https://aistudio.google.com/app/prompts/1PS9dlP3vw7CKXIlfZkNLOSUBoAZzoHIc
+  - https://aistudio.google.com/app/prompts/1uhpjcEzT_c8XA_56_IiDYs0xyekQ0d1-
+    - Develop sub-agent for refining specific ideas of implementation
+      - The main agent would identify when a conversation is going into "refinement mode" and engage the sub-agent
+      - This can be done proactively during the final refinement stage
+      - The sub-agent can then spend as much context window as it needs on the question of refining the principle in question and return the agreed results for final incorporation
 - 4/5 "Systems (for non-RPG)
   - Principles/Concepts - Reference for Intended World/Plot/Emotional Outcomes
     - Basically "Setting the scene" on which all other aspects work
@@ -150,3 +161,6 @@ Unfortunately, I deleted the chats in the history where I asked for the generic 
 - Blocking situation
 - Exit state
 - Cleanup phase
+
+
+https://arxiv.org/pdf/2404.13919

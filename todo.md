@@ -3,6 +3,7 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Investigate upgrading to paid tier (OR https://vast.ai/): paid
 
 # [PRIME] Experiment with initial agentic system
+- Implement the extrapolation workflow using sub-agents for deep-dives and workshops
 - I can recast the entire "repl" into a simple agent
   - overkill, but'll help with experience
   - but there is a gain from auto-binding the planner and writer
@@ -17,28 +18,12 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Implement Basic RAG agent w/ vector store and World DB
 
 # [SECONDARY] Identifying Building Blocks
-- Work on building a full story spec extrapolation workflow
-  - https://aistudio.google.com/app/prompts/1uhpjcEzT_c8XA_56_IiDYs0xyekQ0d1-
-  - https://aistudio.google.com/app/prompts/1OyQ0kPEE2V3T8tAYRX1HdGiJIOXI8JIt
-- Assemble the orchestrator into a prompt
-  - Just need to integrate the specs with the full orchestrator prompt
-  - The orchestrator/specialist pairing seems very promising
-    - Though some of the specs aren't assuming it
-  - Just need
-    1. Attach modules/skills for producing the specific narrative items
-    2. Split the specialist into a separate agent with handoffs
+- Get the script to produce the data in a structured format
+- Include schema outputs in specfinding
+- Investigate making a "plot critique" agent that could parse the output of the ai studio tests and present ways of adjusting the pacing
+  - If I'm using a lot of time jumps, then it's probably a sign the steps are too small
+  - Would also have to include specific comments about what I didn't like since I don't have any tools to indicate that directly in the conversation
 - Would be a good idea to make an agent specifically for understanding this process and all of it's interactions (could be good for adding new features)
-
-- Orchestrator Key Parts:
-  - Conversational Model
-  - Background Processing and Synthesis
-  - Deep Dive Handoff Procedure
-  - Output Aspects
-    - Engines
-    - Concepts
-    - Rules
-    - Generation
-    - Writer
 
 # Agentic Extensions
 - Implement world character db (with game state)
@@ -46,9 +31,7 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - https://www.google.com/search?q=custom+storytelling+world+agent&oq=custom+storytelling+world+agent&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIHCAEQIRigATIHCAIQIRigATIHCAMQIRigAdIBCDUyMjBqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8
 
 # Refining Principles Approach
-- Use the new workflow for the reality story
 - Use the new workflow for the curse story
-- Use the new workflow for the late story
 - Use the new workflow for the mara story
 - Use the new workflow for the thousand story
 - Use the new workflow for the level story
@@ -57,6 +40,7 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 # Building on the general principles
 - Work on adding events to the prompt handling
 - Split principles/etc. into explicit events (I don't have an explicit event system yet because everything is incorporated into principles/rules)
+    1. Attach modules/skills for producing the specific narrative items
 
 # Long Form Text Generation
 - Use repeated iteration to build longer novel-form scenes

@@ -2,33 +2,49 @@
 https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Investigate upgrading to paid tier (OR https://vast.ai/): paid
 
-# [PRIME] Experiment with initial agentic system
+- the cohesive specfinding approach works very well in practice
+  - pretty close to the by hand construction
+  - has some issues, notably with specifics and schemas
+  - also requires very fine-grained context management
+
+# Tracks
+- Specfinding Agents
+- Improving Specfinding Search
+- Longform Storydesign
+- Interactive Storydesign
+- Enforcing world fidelity and other rules
+- RAG/Skills agent
+- Create Specsheets for all narratives
+
+# [EXTERNAL] Markdown2pdf
+- Integrate with Obsidian to simplify export even more
+- Create AI script for running prompt
+
+# [PRIME] Specfinding Agents
 - Implement the extrapolation workflow using sub-agents for deep-dives and workshops
-- I can recast the entire "repl" into a simple agent
-  - overkill, but'll help with experience
-  - but there is a gain from auto-binding the planner and writer
-  - https://docs.langchain.com/oss/python/langgraph/workflows-agents
-- Develop reviewer prompt into a very detailed analaysis and editor agent
-  - Implement into a Reflection agent
-    - https://medium.com/aimonks/reflection-agents-with-langgraph-agentic-llm-based-applications-87e43c27adc7
-- Implement an iterative agent with critique
-  - Plan and Execute (an adaptation on the architect pattern)
-- Develop a very basic prompt to test out tool calling
-  - Using skills checks in agent.py
-- Implement Basic RAG agent w/ vector store and World DB
+  - Figure out context management tricks that can keep the system working
+  - Is sub-agents for deep dives really a good idea?
+    - We still have to pass in context so the sub-agents can interpret stuff
+    - Might be better to focus on summarization/RAG/context stuff
 
-# [SECONDARY] Identifying Building Blocks
-- Get the script to produce the data in a structured format
-- Include schema outputs in specfinding
-- Investigate making a "plot critique" agent that could parse the output of the ai studio tests and present ways of adjusting the pacing
-  - If I'm using a lot of time jumps, then it's probably a sign the steps are too small
-  - Would also have to include specific comments about what I didn't like since I don't have any tools to indicate that directly in the conversation
-- Would be a good idea to make an agent specifically for understanding this process and all of it's interactions (could be good for adding new features)
+# [SECONDARY] Identifying Specfinding
+- Try out architect_v2 (orchestrator_v2?)
+- Structured output of produced modules
+  - Rework the specfinding process in light of the spec
+    - Because the output needs to be usable to produce the spec
+  - Integrate it into the orchestrator_v2 so the final output
+    - Can't integrate directly with orchestrator_v2 because it ruins the conversational aspect of the prompt
+    - I think I'll need to make the orchestrator_v2 export a full report that can be filtered into the 
+- Merge engines and generation rules as they are both plot involved
+  - Recast generation.md to same format
 
-# Agentic Extensions
-- Implement world character db (with game state)
-  - Building skill check to full model system
-- https://www.google.com/search?q=custom+storytelling+world+agent&oq=custom+storytelling+world+agent&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIHCAEQIRigATIHCAIQIRigATIHCAMQIRigAdIBCDUyMjBqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8
+# Another Look at Long Term Planning
+- Use repeated iteration to build longer novel-form scenes
+  - https://aistudio.google.com/app/prompts/179Q4SpXMnAfGWaw_M8E_HiqobQcFIQ8g
+- TODO: Requires Paid API tier
+- Identify the place of ending and the duration
+  - https://aistudio.google.com/app/prompts/18QQT7o5XLqF_ZXpKnRp61ipzNSagsHYQ
+  - Solution would seem to require multiple agents
 
 # Refining Principles Approach
 - Use the new workflow for the curse story
@@ -41,19 +57,6 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Work on adding events to the prompt handling
 - Split principles/etc. into explicit events (I don't have an explicit event system yet because everything is incorporated into principles/rules)
     1. Attach modules/skills for producing the specific narrative items
-
-# Long Form Text Generation
-- Use repeated iteration to build longer novel-form scenes
-  - https://aistudio.google.com/app/prompts/179Q4SpXMnAfGWaw_M8E_HiqobQcFIQ8g
-- Can maybe explore some of the eqbench framework
-- I want detailed novel like prose
-- I'm thinking keeping tracking of progression and having a "give next part"
-- More planning outlines (read papers?)
-- Refining multistage approach
-  - Plot planner => scene bullet points
-    - How do I do this while maintaining reactions/etc. continuity?
-  - scene bullet points => annotated scene script
-  - scene script can be passed to focused writers
 
 # !!! Clean up the Presentation in CLI !!!
 - I was thinking about the story bible though that's only in ai studio
@@ -69,15 +72,22 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
   - migrate schemas to structured output
 - Need to migrate story context to yaml
   - Build `story_state` from response
+- Investigate making a "plot critique" agent that could parse the output of the ai studio tests and present ways of adjusting the pacing
+  - If I'm using a lot of time jumps, then it's probably a sign the steps are too small
+  - Would also have to include specific comments about what I didn't like since I don't have any tools to indicate that directly in the conversation
+- Would be a good idea to make an agent specifically for understanding this process and all of it's interactions (could be good for adding new features)
+
+# Other Agents:
+- Develop reviewer prompt into a very detailed analaysis and editor agent
+  - Implement into a Reflection agent
+    - https://medium.com/aimonks/reflection-agents-with-langgraph-agentic-llm-based-applications-87e43c27adc7
+- Implement an iterative agent with critique
+  - Plan and Execute (an adaptation on the architect pattern)
+- Develop a very basic prompt to test out tool calling
+  - Using skills checks in agent.py
+- Implement Basic RAG agent w/ vector store and World DB
 
 DSPy
-
-
-- Rules may also be useful as a way of "extending schemas" so that I can make the yaml fully general?
-  - Would it be possible to using "typed yaml"?
-    - Say that this schema applies to `X` fields
-    - Then use the `<field>: [X]` to apply the schema
-  - This might also imply that schema is a separate category
 
 Long Term:
   Local GPU

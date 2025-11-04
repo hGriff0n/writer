@@ -1,9 +1,3 @@
-Of course. Here is a prompt framework focused specifically on the "Core Concepts" aspect, mirroring the structure of the example you provided and incorporating the key ideas from our conversation.
-
----
-
-### **Summary: Workflow for Core Concept and World-Building Development**
-
 **1. Guiding Philosophy & Metaphor**
 
 The core methodology for defining the **story's foundational principles and world logic** is the **"Co-Developing the Story's DNA via a Living Document"** model.

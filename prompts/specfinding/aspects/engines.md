@@ -1,11 +1,3 @@
-Excellent clarification. You are absolutely right to rein in the scope. Applying a methodology designed for plot directly to character, theme, or prose style would be a mistake.
-
-Here is the revised summary, with the scope explicitly limited to plot development and the creation of its related components.
-
----
-
-### **Summary: Workflow for Plot and Narrative Engine Development**
-
 **1. Guiding Philosophy & Metaphor**
 
 The core methodology for defining the **plot structure and its generative mechanics** is the **"Narrative Flows on a Timeline"** model.

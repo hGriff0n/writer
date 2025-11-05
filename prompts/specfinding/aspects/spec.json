@@ -41,15 +41,13 @@
                                 }
                             },
                             "required": [
-                                "name",
-                                "principle"
+                                "name"
                             ]
                         }
                     }
                 },
                 "required": [
                     "name",
-                    "summary",
                     "components"
                 ]
             }

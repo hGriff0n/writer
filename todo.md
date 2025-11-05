@@ -28,13 +28,22 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
     - Might be better to focus on summarization/RAG/context stuff
 
 # [SECONDARY] Identifying Specfinding
-- Try out architect_v2 (orchestrator_v2?)
-- Structured output of produced modules
-  - Rework the specfinding process in light of the spec
-    - Because the output needs to be usable to produce the spec
-  - Integrate it into the orchestrator_v2 so the final output
-    - Can't integrate directly with orchestrator_v2 because it ruins the conversational aspect of the prompt
-    - I think I'll need to make the orchestrator_v2 export a full report that can be filtered into the 
+- Try out spec extraction from blueprint
+  - "Can you read the following document and extract the information into the structured output schema" (works ok for the most part)
+    - Want to add a bit more summarization and "thinking"
+    - Don't have DORMANT state if active at start
+    - late, ACTIVE->END transition should specify end of senior year
+    - prioritizes mandate and event schema rules`
+- Integrate structured output into orchestrator_v2
+  - Test performance of prompt
+- Add summarization mode for dealing with context?
+  - https://aistudio.google.com/app/prompts/1jkTC-zTuwbflL-ZPHL8PqNMbvyIHN5Wt
+  - Should also add in explicit tracking of setting, characters, etc. if named
+    - Not generation or example characters, but required elements
+- Create a prompt to turn the IR into the spec
+  - https://aistudio.google.com/app/prompts/175Peew25F6rWF8RuRPwrl_04YAGKTGOF
+  - Needs practical examples to work with
+- Adapt the architect prompt to use the json spec
 - Merge engines and generation rules as they are both plot involved
   - Recast generation.md to same format
 

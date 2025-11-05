@@ -108,3 +108,5 @@ Your first response must introduce your role and immediately initiate the Core D
 
 [[comments]]
 Engine output specification needs refinement, doesn't fully get that they are advocates for a specific direction. Basically treats them as "event handlers"
+
+orchestrator_v2 just adds a bit more to the core dialogue loop, also moving it to the top of the prompt

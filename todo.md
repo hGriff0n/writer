@@ -20,32 +20,42 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Integrate with Obsidian to simplify export even more
 - Create AI script for running prompt
 
-# [PRIME] Specfinding Agents
+# [TERTIARY] Specfinding Agents
 - Implement the extrapolation workflow using sub-agents for deep-dives and workshops
   - Figure out context management tricks that can keep the system working
   - Is sub-agents for deep dives really a good idea?
     - We still have to pass in context so the sub-agents can interpret stuff
     - Might be better to focus on summarization/RAG/context stuff
 
+# [PRIME] Rewrite Specfinding From First Principles
+- I have a good idea for the collaborative workflow
+  - But I need to get better IR and skill integration
+  - I'm not sure I'm making good progress on adapting knock-ons
+  - The current orchestration also doesn't fully cover everything evenly
+
 # [SECONDARY] Identifying Specfinding
-- Try out spec extraction from blueprint
-  - "Can you read the following document and extract the information into the structured output schema" (works ok for the most part)
-    - Want to add a bit more summarization and "thinking"
-    - Don't have DORMANT state if active at start
-    - late, ACTIVE->END transition should specify end of senior year
-    - prioritizes mandate and event schema rules`
-- Integrate structured output into orchestrator_v2
-  - Test performance of prompt
-- Add summarization mode for dealing with context?
-  - https://aistudio.google.com/app/prompts/1jkTC-zTuwbflL-ZPHL8PqNMbvyIHN5Wt
-  - Should also add in explicit tracking of setting, characters, etc. if named
-    - Not generation or example characters, but required elements
-- Create a prompt to turn the IR into the spec
-  - https://aistudio.google.com/app/prompts/175Peew25F6rWF8RuRPwrl_04YAGKTGOF
-  - Needs practical examples to work with
 - Adapt the architect prompt to use the json spec
+  - Also need to update scripts
+  - ai studio doesn't seem to help
+- Create schema for writer agent
+- Create writer agent (or prompt to produce writer agent from IR)
+- Add summarization mode for dealing with context
+  - Verify updated prompt using the output of the structured output tests
+  - https://aistudio.google.com/app/prompts/1jkTC-zTuwbflL-ZPHL8PqNMbvyIHN5Wt
+  - sketchpad needs to be more exploratory
+  - intermediate document was very bare in terms of narrative engines
+    - said they will be specified later, but that wasn't indicated in brief
+- Investigate redoing the orchestration prompt with more fidelity
+  - Explicitly cast the individual concepts as "skills"
+    - Each run only loads a single "skill" but the AI would be able to identify information that may be relevant for a future skill
+  - The main conversation then just becomes an exploration of the entire concept, the intermediate representation is meant to be a report on the world and the narrative 
+- Test performance of structured orchestrator_v2 for defining story idea
 - Merge engines and generation rules as they are both plot involved
   - Recast generation.md to same format
+- Investigate "Writer Explorer" prompt to refine IR for scene/writer
+  - Basically specfinding/writer.md
+  - Beat Generation/Authorial tone and style/etc.
+  - The beat generation would be combined with the extracted plot
 
 # Another Look at Long Term Planning
 - Use repeated iteration to build longer novel-form scenes

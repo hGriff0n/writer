@@ -28,10 +28,24 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
     - Might be better to focus on summarization/RAG/context stuff
 
 # [PRIME] Rewrite Specfinding From First Principles
-- I have a good idea for the collaborative workflow
-  - But I need to get better IR and skill integration
-  - I'm not sure I'm making good progress on adapting knock-ons
-  - The current orchestration also doesn't fully cover everything evenly
+- Have a separate chat to develop creative writing process irrespective of prompt
+- Then work on detailing that understanding into a prompt
+
+- Collaborative loop focusing on synthesis and understanding
+  - I think I have a pretty good basis for this process
+- Intermediate representation that is processed by follow-up agents
+  - The IR can also be feed back into the main loop for updates/revisions
+  - This also thereby implements context summarization (though how much?)
+- Specific aspects are connected to skills which define the search process
+  - What does the aspect mean and what things need to be analyzed/collected
+  - How is this used in the broader story generation system
+  - What schema is used to represent the stored data
+- Follow up agents to develop the specific prompts/input for later stages
+  - Re-exploration of plot and scene development and direction
+  - I believe I have an okay schema 
+- Final architect+writer agent which are run tag-team to make the prose
+  - The architect plans long-form plot beats and action
+  - The writer then takes those plot beats and develops scenes showing them
 
 # [SECONDARY] Identifying Specfinding
 - Adapt the architect prompt to use the json spec

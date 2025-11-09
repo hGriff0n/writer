@@ -207,36 +207,6 @@
                                     "items": {
                                         "type": "string"
                                     }
-                                },
-                                "beat_generation": {
-                                    "type": "object",
-                                    "description": "A special rule that describes how plot beats should be built from the recommendations of the narrative engines.",
-                                    "properties": {
-                                        "calibration": {
-                                            "type": "string",
-                                            "description": "Checks to run before any further generation"
-                                        },
-                                        "rules": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "name": {"type": "string"},
-                                                    "text": {
-                                                        "type": "string",
-                                                        "description": "Instructions for how proposed plot beats should weighted"
-                                                    },
-                                                    "addl": {
-                                                        "type": "array",
-                                                        "description": "Additional modifications and adjustments to specific circumstances",
-                                                        "items": {
-                                                            "type": "string"
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
                                 }
                             },
                             "required": ["name"]
@@ -248,11 +218,42 @@
                     "rules"
                 ]
             }
+        },
+        "beat_generation": {
+            "type": "object",
+            "description": "A collection of rules and heuristics for resolving the proposals from narrative engines into a coherent plot beat",
+            "properties": {
+                "calibration": {
+                    "type": "string",
+                    "description": "Checks to run before any further generation"
+                },
+                "rules": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string"},
+                            "text": {
+                                "type": "string",
+                                "description": "Instructions for how proposed plot beats should weighted"
+                            },
+                            "addl": {
+                                "type": "array",
+                                "description": "Additional modifications and adjustments to specific circumstances",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "required": [
         "core_concepts",
         "narrative_engines",
-        "narrative_rules"
+        "narrative_rules",
+        "beat_generation"
     ]
 }

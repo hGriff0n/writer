@@ -28,8 +28,7 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
     - Might be better to focus on summarization/RAG/context stuff
 
 # [PRIME] Rewrite Specfinding From First Principles
-- Have a separate chat to develop creative writing process irrespective of prompt
-- Then work on detailing that understanding into a prompt
+- Then work on detailing that understanding into architecture plans
 
 - Collaborative loop focusing on synthesis and understanding
   - I think I have a pretty good basis for this process

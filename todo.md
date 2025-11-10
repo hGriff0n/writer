@@ -30,6 +30,14 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 # [PRIME] Rewrite Specfinding From First Principles
 - Then work on detailing that understanding into architecture plans
 
+- Creating new version of orchestrator
+  - Unifies reporting of resume states and finalized output
+  - Implements aspects using skills
+    - https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills
+    - https://github.com/maxvaega/skillkit
+    - https://forum.langchain.com/t/we-implemented-anthropics-skills-approach-using-langchain-v1-feedbacks/2126
+  - 
+
 - Collaborative loop focusing on synthesis and understanding
   - I think I have a pretty good basis for this process
 - Intermediate representation that is processed by follow-up agents

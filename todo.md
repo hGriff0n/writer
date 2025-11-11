@@ -20,45 +20,30 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Integrate with Obsidian to simplify export even more
 - Create AI script for running prompt
 
-# [TERTIARY] Specfinding Agents
-- Implement the extrapolation workflow using sub-agents for deep-dives and workshops
-  - Figure out context management tricks that can keep the system working
-  - Is sub-agents for deep dives really a good idea?
-    - We still have to pass in context so the sub-agents can interpret stuff
-    - Might be better to focus on summarization/RAG/context stuff
-
 # [PRIME] Rewrite Specfinding From First Principles
-- Then work on detailing that understanding into architecture plans
-
+- Impressions of prompt (doing well overall, though prompt is >10k without skills)
+  - Narrative rules don't need the full codebox escaping
 - Implement agentic layer to dynamically load skill files
+  - Switch specfinding.py to gemini langchain
+  - Switch to paid tier
   - Docs:
     - https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills
     - https://github.com/maxvaega/skillkit
     - https://forum.langchain.com/t/we-implemented-anthropics-skills-approach-using-langchain-v1-feedbacks/2126
   - Work on the detection mechanisms for determining a load is needed
-
-- Investigate alternative context assembly
-  - Agent maintains an internal image of what the living document is
-  - Sends that model in every request, no chat history
-    - History would be useful for determining what did/didn't work
-  - Updates model when the response indicates the user agrees with the ai's understanding, basically merges them together.
-
 - Moving back to story development
   - Recast all stories to new IR model
+    - late: https://aistudio.google.com/app/prompts/1rPNNsBAnlGybdF_iscxUFWdFU6HkqYB9
+      - Finish getting translation into report.md
+      - Then try a discussion on building the story ground up
+  - Potentially fill out the other stories
   - Validate json schema against updated IR
 - Create new architect that utilises json schema to develop plot plans
   - Starting on trying to implement the recursive parliaments
-- Investigate new writers that can provide more detailed long-form scenes
-- Investigate adding AI critique agents
 - Recast scenescript to be engine based if possible
+  - This and plot beats deserve a lot of investigation
 
-- Collaborative loop focusing on synthesis and understanding
-  - I think I have a pretty good basis for this process
-
-- Specific aspects are connected to skills which define the search process
-  - What does the aspect mean and what things need to be analyzed/collected
-  - How is this used in the broader story generation system
-  - What schema is used to represent the stored data
+Not Fully sure what I'm intending here
 - Follow up agents to develop the specific prompts/input for later stages
   - Re-exploration of plot and scene development and direction
   - I believe I have an okay schema 
@@ -67,33 +52,28 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
   - The writer then takes those plot beats and develops scenes showing them
 
 # [SECONDARY] Identifying Specfinding
-- Adapt the architect prompt to use the json spec
-  - Also need to update scripts
-  - ai studio doesn't seem to help
+- TODO: me - Update this after finishing the above task
+  - This still has some improvements which aren't captured above
 - Create schema for writer agent
 - Create writer agent (or prompt to produce writer agent from IR)
-- Add summarization mode for dealing with context
-  - Verify updated prompt using the output of the structured output tests
-  - https://aistudio.google.com/app/prompts/1jkTC-zTuwbflL-ZPHL8PqNMbvyIHN5Wt
-  - sketchpad needs to be more exploratory
-  - intermediate document was very bare in terms of narrative engines
-    - said they will be specified later, but that wasn't indicated in brief
-- Investigate redoing the orchestration prompt with more fidelity
-  - Explicitly cast the individual concepts as "skills"
-    - Each run only loads a single "skill" but the AI would be able to identify information that may be relevant for a future skill
-  - The main conversation then just becomes an exploration of the entire concept, the intermediate representation is meant to be a report on the world and the narrative 
-- Test performance of structured orchestrator_v2 for defining story idea
+- Investigate alternative context assembly
+  - Agent maintains an internal image of what the living document is
+  - Sends that model in every request, no chat history
+    - History would be useful for determining what did/didn't work
+  - Updates model when the response indicates the user agrees with the ai's understanding, basically merges them together.
 - Merge engines and generation rules as they are both plot involved
-  - Recast generation.md to same format
+- Investigate adding AI critique agents
 - Investigate "Writer Explorer" prompt to refine IR for scene/writer
   - Basically specfinding/writer.md
   - Beat Generation/Authorial tone and style/etc.
   - The beat generation would be combined with the extracted plot
+- Investigate using sub-agents for deep-dives dueing specfinding
 
 # Another Look at Long Term Planning
+- Investigate new writers that can provide more detailed long-form scenes
+- Investigate recasting plot planning to use parliament model
 - Use repeated iteration to build longer novel-form scenes
   - https://aistudio.google.com/app/prompts/179Q4SpXMnAfGWaw_M8E_HiqobQcFIQ8g
-- TODO: Requires Paid API tier
 - Identify the place of ending and the duration
   - https://aistudio.google.com/app/prompts/18QQT7o5XLqF_ZXpKnRp61ipzNSagsHYQ
   - Solution would seem to require multiple agents
@@ -109,6 +89,8 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Work on adding events to the prompt handling
 - Split principles/etc. into explicit events (I don't have an explicit event system yet because everything is incorporated into principles/rules)
     1. Attach modules/skills for producing the specific narrative items
+- Research phases for identifying potential themes, plots, etc.?
+  - Also useful for naming/etal
 
 # !!! Clean up the Presentation in CLI !!!
 - I was thinking about the story bible though that's only in ai studio

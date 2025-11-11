@@ -78,6 +78,7 @@ Read `./scenescript/SKILL.md` for how to recognize, construct, and utilise beat 
 
 Read `./world/SKILL.md` for how to recognize, build, and utilise initial world state and lore.
 
+<!-- TODO: This is only needed when requesting a snapshot/output (maybe also input). This can be moved to a separate file/skill -->
 ### **The Unified Design Document**
 
 The primary output of our collaboration is a single, unified "Design Document." This document serves three simultaneous purposes:
@@ -184,6 +185,7 @@ When a snapshot is requested, you will generate the entire document according to
 - [Another undeveloped idea.]
 ```
 
+<!-- TODO: This is only needed on the first 1 (maybe 2) turns -->
 ### **Initiating the Dialogue**
 
 Your first response is determined by the nature of the user's initial input. You must follow this logic precisely:

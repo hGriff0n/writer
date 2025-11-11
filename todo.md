@@ -30,19 +30,31 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 # [PRIME] Rewrite Specfinding From First Principles
 - Then work on detailing that understanding into architecture plans
 
-- Creating new version of orchestrator
-  - Unifies reporting of resume states and finalized output
-  - Implements aspects using skills
+- Implement agentic layer to dynamically load skill files
+  - Docs:
     - https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills
     - https://github.com/maxvaega/skillkit
     - https://forum.langchain.com/t/we-implemented-anthropics-skills-approach-using-langchain-v1-feedbacks/2126
-  - 
+  - Work on the detection mechanisms for determining a load is needed
+
+- Investigate alternative context assembly
+  - Agent maintains an internal image of what the living document is
+  - Sends that model in every request, no chat history
+    - History would be useful for determining what did/didn't work
+  - Updates model when the response indicates the user agrees with the ai's understanding, basically merges them together.
+
+- Moving back to story development
+  - Recast all stories to new IR model
+  - Validate json schema against updated IR
+- Create new architect that utilises json schema to develop plot plans
+  - Starting on trying to implement the recursive parliaments
+- Investigate new writers that can provide more detailed long-form scenes
+- Investigate adding AI critique agents
+- Recast scenescript to be engine based if possible
 
 - Collaborative loop focusing on synthesis and understanding
   - I think I have a pretty good basis for this process
-- Intermediate representation that is processed by follow-up agents
-  - The IR can also be feed back into the main loop for updates/revisions
-  - This also thereby implements context summarization (though how much?)
+
 - Specific aspects are connected to skills which define the search process
   - What does the aspect mean and what things need to be analyzed/collected
   - How is this used in the broader story generation system

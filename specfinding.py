@@ -1,13 +1,16 @@
 from skillkit import SkillManager
 from skillkit.integrations.langchain import create_langchain_tools
-from langchain.agents import create_openapi_agent
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 from pathlib import Path
 
+from lib.ai import init_model
+from lib.config import DataConstants
+
+DEFS = DataConstants()
+model_config = DEFS.get_config_for_model('gemini-2.5-pro')
+
 # Discover skills
-manager = SkillManager(
-    Path(r"C:\Users\ghoop\Desktop\writer\prompts\specfinding\aspects"))
+manager = SkillManager(Path(DEFS.aspects_dir))
 manager.discover()
 print(manager.list_skills())
 
@@ -15,15 +18,10 @@ print(manager.list_skills())
 tools = create_langchain_tools(manager)
 
 # Create agent
-llm = ChatOpenAI(model="gpt-4")
+llm = init_model(model_config).bind_tools(create_langchain_tools(manager))
 prompt = "You are a helpful assistant. use the available skills tools to answer the user queries."
-agent = create_openapi_agent(
-    llm,
-    tools,
-    system_prompt=prompt
-)
 
 # Use agent
 query = "What are Common Architectural Scenarios in python?"
-messages = [HumanMessage(content=query)]
-result = agent.invoke({"messages": messages})
+messages = [SystemMessage(prompt), HumanMessage(content=query)]
+result = llm.invoke({"messages": messages})

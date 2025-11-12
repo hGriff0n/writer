@@ -192,3 +192,29 @@ Long Term:
 
 
 https://arxiv.org/pdf/2404.13919
+
+<!-- not minimal list -->
+annotated-types               0.7.0
+langchain                     0.3.27
+langchain-core                0.3.76
+langchain-google-genai        2.1.12
+langchain-openai              0.3.32
+langchain-text-splitters      0.3.9
+langgraph                     0.6.6
+langgraph-checkpoint          2.1.1
+langgraph-prebuilt            0.6.4
+langgraph-sdk                 0.2.3
+pydantic                      2.11.7
+pydantic_core                 2.33.2
+PyYAML                        6.0.2
+regex                         2025.7.34
+requests                      2.31.0
+requests-toolbelt             1.0.0
+rich                          14.1.0
+rsa                           4.9.1
+simplejson                    3.19.2
+skillkit                      0.1.0
+textual                       6.1.0
+types-python-dateutil         2.8.19.14
+typing_extensions             4.15.0
+typing-inspection             0.4.1

@@ -33,6 +33,10 @@ class DataConstants:
                                  for m in self._data['supported-ais']]
 
     @property
+    def aspects_dir(self) -> str:
+        return self._data.get('aspects-dir', '')
+
+    @property
     def supported_ais(self) -> List[str]:
         return self._supported_names
 

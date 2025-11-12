@@ -23,8 +23,10 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 # [PRIME] Rewrite Specfinding From First Principles
 - Impressions of prompt (doing well overall, though prompt is >10k without skills)
   - Narrative rules don't need the full codebox escaping
+  - Don't think it's using the "sketchbook" to it's full potential yet
+  - Not sure it has good "cross-reference"/compaction abilities
+  - Doesn't seem to be capturing cross-reference ideas
 - Implement agentic layer to dynamically load skill files
-  - Switch specfinding.py to gemini langchain
   - Switch to paid tier
   - Docs:
     - https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills
@@ -36,6 +38,8 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
     - late: https://aistudio.google.com/app/prompts/1rPNNsBAnlGybdF_iscxUFWdFU6HkqYB9
       - Finish getting translation into report.md
       - Then try a discussion on building the story ground up
+        - Mostly have core concepts aside from perception
+        - Momentum and constraints can be inferred
   - Potentially fill out the other stories
   - Validate json schema against updated IR
 - Create new architect that utilises json schema to develop plot plans

@@ -60,7 +60,6 @@ The sidebar can contain the following update types:
 
 This section defines the five core components of the blueprint. You will use these to structure your conversation and the final document.
 
-<!-- TODO: Need to add file loading to an agent script (also paid tier) and then also need to load these dynamically, but this is a good starting point -->
 #### **1. Core Concepts (The Foundational Truths)**
 
 > ## Overview
@@ -459,7 +458,3 @@ Your first response is determined by the nature of the user's initial input. You
 2.  **If the input is NOT a Unified Design Document (i.e., a new idea or empty):**
     Your first response must introduce your role and immediately initiate the Core Dialogue Loop. If the user has already provided their story idea, begin by asking an insightful, probing question about its texture or feeling. Otherwise, prompt them to share their idea in an open-ended way.
 ***
-
-[[comments]]
-<!-- TODO: We lost this in recent updates, but I didn't really end up using it in practice, although that was a little because I was lacking agents -->
-4.  **Adopt Specialist Personas for "Deep Dives":** When a specific system becomes complex, suggest a focused session to flesh out both its narrative feel and its precise mechanical implementation.

@@ -22,24 +22,24 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 
 # [PRIME] Rewrite Specfinding From First Principles
 - Impressions of prompt (doing well overall, though prompt is >10k without skills)
-  - Narrative rules don't need the full codebox escaping
   - Don't think it's using the "sketchbook" to it's full potential yet
   - Not sure it has good "cross-reference"/compaction abilities
   - Doesn't seem to be capturing cross-reference ideas
 - Implement agentic layer to dynamically load skill files
-  - Switch to paid tier
-  - Docs:
-    - https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills
-    - https://github.com/maxvaega/skillkit
-    - https://forum.langchain.com/t/we-implemented-anthropics-skills-approach-using-langchain-v1-feedbacks/2126
+  - Switch to paid tier due to rate limits
   - Work on the detection mechanisms for determining a load is needed
+    - I don't think the current logic has enough to do that
+  - Investigate systems for managing context size
+    - In practice, I've included everything, which is not accurate
+    - Install a very simple flush mechanics around 40k
+      - This may cause issues with mid-context loss, but we can maybe save everything since the last confirmed commit
+    - Investigate reporting diffs when confirming a new section (architect sidebar is for potential information)
+      - The agent would be able to detect this and assemble an internal document
+      - If this also detected the sidebar stuff, we could erase the recent context and then "return" with a we discussed this offline?
+        - This would fix some of the issue with not using the sketchbook
 - Moving back to story development
   - Recast all stories to new IR model
-    - late: https://aistudio.google.com/app/prompts/1rPNNsBAnlGybdF_iscxUFWdFU6HkqYB9
-      - Finish getting translation into report.md
-      - Then try a discussion on building the story ground up
-        - Mostly have core concepts aside from perception
-        - Momentum and constraints can be inferred
+  - Compaction layer?
   - Potentially fill out the other stories
   - Validate json schema against updated IR
 - Create new architect that utilises json schema to develop plot plans

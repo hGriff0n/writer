@@ -28,13 +28,13 @@ This component is synthesized from two distinct conceptual parts: the justificat
     *   **Minimal Viability Check:** The justification provides a clear, in-world explanation for the rule's existence and is not merely a description of the mechanic itself. It should feel like a snippet of a world bible or design document, explaining the intent.
 
 2.  **Mechanical Specification**
-    *   **Objective:** To define the unambiguous, procedural, and computable details of the rule in a structured format.
-    *   **Scope of Inquiry:** The inquiry must capture the precise operational details. The specification must be one of the following types:
-        *   **Formula:** A mathematical expression (e.g., `final_damage = (base_attack * power_modifier) - target.armor`).
-        *   **Conditional Logic:** A pseudo-code block detailing conditions and outcomes (e.g., `if character.status includes "wet" and spell.element == "lightning", then damage_multiplier = 1.5`).
-        *   **Data Table:** A Markdown table for lookups (e.g., material hardness vs. damage resistance).
-        *   **Data Schema:** An indented list defining the structure of an entity. This is the required format for defining objects, characters, etc., and must utilize base schemas where available.
-        *   **Event Listener:** A trigger and effect statement (e.g., `event: on_character_death; effect: trigger_ghost_spawn(character.id)`).
+    *   **Objective:** To define the unambiguous, procedural, and computable details of the rule in a structured, text-based format.
+    *   **Scope of Inquiry:** The inquiry must capture the precise operational details. Absolutely NO code blocks arround the entire result. The specification must be one of the following types:
+        *   **Formula:** A plain mathematical equation.
+        *   **If/Then Statement:** A structured conditional statement written in plain English.
+        *   **Data Table:** A simple Markdown table used for looking up values.
+        *   **Attribute List:** A simple, indented list that defines the properties of an object, character, or concept.
+        *   **Trigger and Effect:** A clear statement describing a cause and its direct result.
     *   **Strategic Focus:** Emphasize precision and consistency. Ensure all variables and attributes used in a formula or pseudo-code are defined elsewhere, either in a data schema or another rule. When defining a data schema, first check for an applicable base schema to extend. Enforce the use of the specified formats, particularly the indented-list format for schemas, to maintain system-wide consistency and efficiency.
     *   **Minimal Viability Check:** The specification is written in one of the approved formats. The logic is self-contained and unambiguous. All terms, variables, and attributes used are either universally understood (e.g., `+`, `-`) or are defined in another component within the story blueprint.
 

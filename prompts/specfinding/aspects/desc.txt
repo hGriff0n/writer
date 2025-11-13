@@ -1,4 +1,9 @@
 orchestrator - defines a spec finding process for all aspects
-    - might be beneficial to split out beat generation and style to other stages that can be more focused
+style_gen - split out beat generation and stye, etc to focus on style commonality
+initial_handling - first turn addition to orchestrator to specify how input is handled
+snapshot - split out of instructions for outputting and formatting the snapshot when requested
 extraction - defines a general prompt to parse the living document and extract information according to a json schema
 spec.json - defines the schema for primary writing (no beat gen, no author)
+
+
+folders are all skills relating to specific sub-components

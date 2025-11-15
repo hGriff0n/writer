@@ -4,7 +4,7 @@ from datetime import datetime
 import json
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Tuple
 
 from .config import Config, DataConstants
 
@@ -186,13 +186,13 @@ class LlmEngine:
     def usage_stats(self) -> UsageTracker:
         return self._usage
 
-    def invoke(self, message: str, context: List[AnyMessage], *args, **kwargs) -> str:
+    def invoke(self, message: str, context: List[AnyMessage], *args, **kwargs) -> Tuple[str, any]:
         context.append(HumanMessage(content=message))
         response = self._llm.invoke(input=context, *args, **kwargs)
         context.append(response)
         self._usage.append(response.usage_metadata)
         self._record_chat(message, response.content)
-        return response.content
+        return response.content, response.usage_metadata
 
     def est_cost(self):
         return self._usage.compute_cost()

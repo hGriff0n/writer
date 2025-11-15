@@ -1,7 +1,6 @@
 
 from argparse import ArgumentParser
 import json
-import re
 from typing import Dict, List, Tuple
 import yaml
 

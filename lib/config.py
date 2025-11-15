@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 import yaml
+import json
 
 # TODO: me - these would be a dataclass if I didn't use '-' in yaml
 # TODO: me - Rewrite with dataclasses and one of these libraries
@@ -14,14 +15,14 @@ def _strip_comments(data: str) -> str:
 
 def _load_yaml(file):
     try:
-        with open(file, 'r') as f:
+        with open(file, 'r', encoding='utf-8') as f:
             return yaml.safe_load(f)
     except:
         return {}
     
 def load_markdown(file):
     try:
-        with open(file, 'r') as f:
+        with open(file, 'r', encoding='utf-8') as f:
             return _strip_comments(f.read())
     except:
         return ''
@@ -190,17 +191,22 @@ class Config:
     # TODO: me - Not sure if this is the best approach for
     # development, just cause I won't be iterating there
     def load_prompt_file(self, prompt: str) -> str:
-        with open(f'./{self.directories.prompts}/{prompt}.md', 'r') as f:
+        with open(f'./{self.directories.prompts}/{prompt}.md', 'r', encoding='utf-8') as f:
             return _strip_comments(f.read())
 
     def load_story(self, story: str) -> str:
         base_file = f'./{self.directories.story}/{story}'
-        with open(f'{base_file}/_story.yaml', 'r') as f:
+        with open(f'{base_file}/_story.yaml', 'r', encoding='utf-8') as f:
             return StoryFile(story, base_file, yaml.safe_load(f))
 
     def load_story_file(self, story: str, file: str) -> str:
-        with open(f'./{self.directories.story}/{story}/{file}.md', 'r') as f:
+        with open(f'./{self.directories.story}/{story}/{file}.md', 'r', encoding='utf-8') as f:
             return _strip_comments(f.read())
+        
+    def load_schema(self, schema: str) -> Dict:
+        with open(f'./{self.directories.prompts}/{schema}.json', 'r', encoding='utf-8') as f:
+            return json.load(f)
+
 
 
 def load_config(defaults: DataConstants) -> Config:

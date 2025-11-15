@@ -196,7 +196,7 @@ if args.runs > 0:
         print(f'Completed chapter {i} out of {args.runs}...')
         time.sleep(12)
     book = [response for response in writer.chat_log.having_role('AI')]
-    with open('./.tmp/book.txt', 'w') as f:
+    with open('./.tmp/book.txt', 'w', encoding='utf-8') as f:
         f.write('\n---\n'.join(book))
     print(f'Finished writing {args.runs} chapters to ./tmp/book.txt')
 

@@ -9,8 +9,10 @@ from typing import Dict, List, Optional, Union, Tuple
 from .config import Config, DataConstants
 
 from langchain.chat_models import base, init_chat_model
+from langchain_core.messages.base import BaseMessage
 from langchain_core.messages import AnyMessage, HumanMessage, SystemMessage
 from langchain_core.messages.ai import UsageMetadata
+from langchain_core.callbacks import UsageMetadataCallbackHandler
 
 
 LlmModel = Union[base.BaseChatModel, base._ConfigurableModel]
@@ -140,7 +142,7 @@ class LlmEngine:
 
     DEFAULT_MODEL = 'gemini'
 
-    def __init__(self, config: Config, model: str, prompt_file: str = None, prompt: str = None, flash: bool = False, *args, **kwargs):
+    def __init__(self, config: Config, model: str, prompt_file: str = None, prompt: str = None, flash: bool = False, schema: Dict = None, *args, **kwargs):
         # Resolve the selected model, allowing for model to actually indicate
         # a profile which auto-includes specific model settings
         self._model_name = model + (flash and '-flash' or '')
@@ -153,12 +155,16 @@ class LlmEngine:
             raise Exception(
                 f'Attempt to load unsupported mode: {self._model_name}')
 
-        print(f'Creating model `{self._model_name}`: {self._model_config}')
         # Setup the rest of the engine.
         self._llm = init_model(self._model_config)
+        self._callback = UsageMetadataCallbackHandler()
         self._prompt = prompt if prompt else config.load_prompt_file(prompt_file)
         self._log = ChatLog(template=self._prompt, conversation=[])
         self._usage = UsageTracker(self._model_name, config.constants)
+
+        self._structured = schema is not None
+        if self._structured:
+            self._llm = self._llm.with_structured_output(schema, method='json_schema', include_raw=True)
 
     def _record_chat(self, message: str, response: str):
         self._log.conversation.extend([
@@ -189,10 +195,19 @@ class LlmEngine:
     def invoke(self, message: str, context: List[AnyMessage], *args, **kwargs) -> Tuple[str, any]:
         context.append(HumanMessage(content=message))
         response = self._llm.invoke(input=context, *args, **kwargs)
-        context.append(response)
-        self._usage.append(response.usage_metadata)
-        self._record_chat(message, response.content)
-        return response.content, response.usage_metadata
+        if not self._structured:
+            context.append(response)
+            response = response.content
+        elif 'raw' in response:
+            context.append(response['raw'])
+            response = response['parsed']
+        else:
+            context.append(SystemMessage([response]))
+        
+        usage = self._callback.usage_metadata
+        self._usage.append(usage)
+        self._record_chat(message, response)
+        return response, usage
 
     def est_cost(self):
         return self._usage.compute_cost()

@@ -13,12 +13,18 @@ def _strip_comments(data: str) -> str:
     return (data[:idx].strip() if idx != -1 else data)
 
 def _load_yaml(file):
-    with open(file, 'r') as f:
-        return yaml.safe_load(f)
+    try:
+        with open(file, 'r') as f:
+            return yaml.safe_load(f)
+    except:
+        return {}
     
-def _load_markdown(file):
-    with open(file, 'r') as f:
-        return _strip_comments(f.read())
+def load_markdown(file):
+    try:
+        with open(file, 'r') as f:
+            return _strip_comments(f.read())
+    except:
+        return ''
 
 # For system/program constants that are not mutable
 # Theoretically, this could be eventually used to support multiple different
@@ -70,12 +76,19 @@ class StoryFile:
         self._engines = None
         self._rules = None
         self._schemas = None
+        self._fullspec = None
 
     def _load(self, file):
-        return _load_markdown(f'{self._path}/{file}.md')
+        return load_markdown(f'{self._path}/{file}.md') if file else ''
     
     def _load_all(self, files):
         return '\n'.join(self._load(f) for f in files)
+    
+    @property
+    def fullspec(self) -> str:
+        if not self._fullspec:
+            self._fullspec = self._load(self._yaml.get('fullspec'))
+        return self._fullspec
     
     @property
     def title(self) -> str:

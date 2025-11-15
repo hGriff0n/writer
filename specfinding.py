@@ -1,38 +1,90 @@
-from skillkit import SkillManager
-from skillkit.integrations.langchain import create_langchain_tools
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-from pathlib import Path
 
-from lib.ai import init_model
-from lib.config import DataConstants, load_config
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+from langchain_core.rate_limiters import InMemoryRateLimiter
+from argparse import ArgumentParser
+import json
+
+from lib.ai import LlmEngine, init_model
+from lib.config import load_config, DataConstants, load_markdown
+from langchain_core.prompts import PromptTemplate
+
+# For state tracking only
+from langchain_core.load.dump import dumpd
+import json
+
 
 DEFS = DataConstants()
-model_config = DEFS.get_config_for_model('gemini-2.5-pro')
+
+# TODO: me - Rearchitect these arguments so that they are fully customizable
+parser = ArgumentParser(prog='specfinding', description='story spec discussion')
+parser.add_argument('story')
+parser.add_argument('-m', '--profile',
+                    choices=LlmEngine.supported_models(),
+                    default=LlmEngine.DEFAULT_MODEL)
+parser.add_argument('-p', '--prompt',
+                    choices=['simple_writer'], default='simple_writer')
+parser.add_argument('-c', '--resume', action='store_true')
+parser.add_argument('-r', '--runs', type=int, default=0)
+
+
+# Initialize chat app
+args = parser.parse_args()
 config = load_config(DEFS)
+story = config.load_story(args.story)
 
-# Discover skills
-manager = SkillManager(Path(DEFS.aspects_dir))
-manager.discover()
-print(manager.list_skills())
+# Initialize the model
+# TODO: me - Update this to the paid tier limits
+# flash_limiter = InMemoryRateLimiter(
+#     requests_per_second=10 / 60,  # 10 RPM for 2.5flash
+#     check_every_n_seconds=0.1,    # Wake up every 100 ms
+#     max_bucket_size=5,
+# )
+llm = LlmEngine(config, args.profile, prompt=story.writer, temperature=0.8)
 
-# Convert to LangChain tools
-tools = create_langchain_tools(manager)
 
-# Create agent
-llm = init_model(model_config).bind_tools(create_langchain_tools(manager))
-base_prompt = config.load_prompt_file('specfinding/aspects/orchestrator_v2')
+initial = PromptTemplate.from_template(config.load_prompt_file('specfinding/aspects/spec_extraction')).format(document=load_markdown(story.fullspec))
 
-# Adjust the prompt for the initial input
-is_first_turn = True
-prompt = f'{base_prompt}\n\n{config.load_prompt_file('specfinding/aspects/initial_handling')}'
+question = """
+Analyze the source document and compare it against your current list of Core Concepts.
+Are there any Core Concepts in the original document that are not captured in your current list?
 
-messages = [SystemMessage(prompt)]
+If yes, add those concepts to the list and repeat this process until you can't add any more concepts.
+Otherwise, if there are no new concepts that can be added, you MUST output a single word: 'DONE'
+"""
 
-# Use agent
-while True:
-    messages.append(HumanMessage(input("> ".strip())))
-    result = llm.invoke({"messages": messages}).content
-    print(f'AI: {result}')
-    if len(messages) == 2:
-        messages[0] = SystemMessage(base_prompt)
-    messages.append(AIMessage(result))
+messages = [SystemMessage(initial)]
+for i in range(0, 5):
+    result, usage = llm.invoke(question, messages)
+    print(result)
+    print('='*5)
+    if result == 'DONE':
+        break
+
+# result = SystemMessage('')
+# if story.fullspec:
+#     result, usage = llm.invoke(load_markdown(f'{story._path}/{story.fullspec}'), messages)
+# else:
+#     result, usage = llm.invoke(input("> ").strip(), messages)
+# messages[0] = SystemMessage(base_prompt)
+# messages.append(AIMessage(result))
+# print(f'AI({usage['total_tokens']}): {result}')
+
+# # TODO: me - Add context pruning functions
+# def prune_context(llm, messages):
+#     messages.append(HumanMessage('Create snapshot'))
+#     with open('tmp.md', 'w') as f:
+#         f.write(llm.invoke(messages).content)
+#     exit()
+#     return messages
+
+# # Use agent
+# while True:
+#     msg = input(f"{usage['total_tokens']}> ").strip()
+#     if msg == 'exit':
+#         prune_context(llm, messages)
+#     result, usage = llm.invoke(msg, messages)
+
+#     print(f'AI: {result}')
+#     messages.append(result)
+#     if usage['total_tokens'] >= 30000:
+#         messages = prune_context(llm, messages)

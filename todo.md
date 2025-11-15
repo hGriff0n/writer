@@ -21,22 +21,39 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Create AI script for running prompt
 
 # [PRIME] Rewrite Specfinding From First Principles
+- What if I can write a mini-essay about the story and pass that in?
+  - With the new prompt's better scratchpad handling, might be feasible
+  - Testing with curses (prewrite.md)
+    - Specfinding.py mostly works, but seems to have different results depending on how much I pass in
+      - Only having core concepts seems to not be useful, maybe add more
+    - How to handle context as we move beyond extracting core concepts
+  - I still have to follow up with a specific specfinding review, but that should be able to go quicker
+    - Need to slightly adjust the prompt for receiving a spec document
+    - Technically, there are now 3 avenues: the essay, the hook, and the document
 - Impressions of prompt (doing well overall, though prompt is >10k without skills)
-  - Don't think it's using the "sketchbook" to it's full potential yet
-  - Not sure it has good "cross-reference"/compaction abilities
-  - Doesn't seem to be capturing cross-reference ideas
+- Investigate systems for managing context size
+  - In practice, I've included everything, which is not accurate
+  - Install a very simple flush mechanics around 40k
+    - This may cause issues with mid-context loss, but we can maybe save everything since the last confirmed commit
+  - Investigate reporting diffs when confirming a new section (architect sidebar is for potential information)
+    - The agent would be able to detect this and assemble an internal document
+    - If this also detected the sidebar stuff, we could erase the recent context and then "return" with a we discussed this offline?
+      - This would fix some of the issue with not using the sketchbook
+  - https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
+- Alt agent:
+  - Loop agent for extracting from longform
+  - Or parse predoc
+  - Or start conversation
+    - All exit to the same place
 - Implement agentic layer to dynamically load skill files
-  - Switch to paid tier due to rate limits
+  - Alt Idea:
+    - Split the subsections into files?
+  - Figure out how to verify when a skill load/function call happens
+    - Doesn't seem to be recorded in the current logic
+      - There's nothing in "tool call" but the response seems to formalize "Core Concept"
   - Work on the detection mechanisms for determining a load is needed
     - I don't think the current logic has enough to do that
-  - Investigate systems for managing context size
-    - In practice, I've included everything, which is not accurate
-    - Install a very simple flush mechanics around 40k
-      - This may cause issues with mid-context loss, but we can maybe save everything since the last confirmed commit
-    - Investigate reporting diffs when confirming a new section (architect sidebar is for potential information)
-      - The agent would be able to detect this and assemble an internal document
-      - If this also detected the sidebar stuff, we could erase the recent context and then "return" with a we discussed this offline?
-        - This would fix some of the issue with not using the sketchbook
+  - https://leehanchung.github.io/blogs/2025/10/26/claude-skills-deep-dive/
 - Moving back to story development
   - Recast all stories to new IR model
   - Compaction layer?
@@ -72,6 +89,7 @@ Not Fully sure what I'm intending here
   - Beat Generation/Authorial tone and style/etc.
   - The beat generation would be combined with the extracted plot
 - Investigate using sub-agents for deep-dives dueing specfinding
+- Is there anyway to track the constants/config files?
 
 # Another Look at Long Term Planning
 - Investigate new writers that can provide more detailed long-form scenes
@@ -90,9 +108,8 @@ Not Fully sure what I'm intending here
   - this is actually a game, so may need some adjustments
 
 # Building on the general principles
-- Work on adding events to the prompt handling
-- Split principles/etc. into explicit events (I don't have an explicit event system yet because everything is incorporated into principles/rules)
-    1. Attach modules/skills for producing the specific narrative items
+- Incorporating allegory/commentary: https://aistudio.google.com/app/prompts/1xF53-8YVysnFdbZ88Q_1ueBlm5kyFt8p
+- Incorporating research into world building: https://aistudio.google.com/app/prompts/15p_SWfuw-dzpym6oaOb69b9IUIcnY4wX
 - Research phases for identifying potential themes, plots, etc.?
   - Also useful for naming/etal
 

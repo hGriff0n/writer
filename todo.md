@@ -16,30 +16,25 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - RAG/Skills agent
 - Create Specsheets for all narratives
 
+- https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
 # [EXTERNAL] Markdown2pdf
 - Integrate with Obsidian to simplify export even more
 - Create AI script for running prompt
 
+-- Get specfinding agent
+-- Get auto-extraction from spec
+-- Update writer
+-- Clean up everything
+
 # [PRIME] Rewrite Specfinding From First Principles
 - What if I can write a mini-essay about the story and pass that in?
-  - With the new prompt's better scratchpad handling, might be feasible
-  - Testing with curses (prewrite.md)
-    - Specfinding.py mostly works, but seems to have different results depending on how much I pass in
-      - Only having core concepts seems to not be useful, maybe add more
-    - How to handle context as we move beyond extracting core concepts
-  - I still have to follow up with a specific specfinding review, but that should be able to go quicker
+  - Add follow-up conversation with full specfinding
     - Need to slightly adjust the prompt for receiving a spec document
     - Technically, there are now 3 avenues: the essay, the hook, and the document
-- Impressions of prompt (doing well overall, though prompt is >10k without skills)
 - Investigate systems for managing context size
   - In practice, I've included everything, which is not accurate
   - Install a very simple flush mechanics around 40k
     - This may cause issues with mid-context loss, but we can maybe save everything since the last confirmed commit
-  - Investigate reporting diffs when confirming a new section (architect sidebar is for potential information)
-    - The agent would be able to detect this and assemble an internal document
-    - If this also detected the sidebar stuff, we could erase the recent context and then "return" with a we discussed this offline?
-      - This would fix some of the issue with not using the sketchbook
-  - https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
 - Alt agent:
   - Loop agent for extracting from longform
   - Or parse predoc

@@ -27,6 +27,8 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 -- Clean up everything
 
 # [PRIME] Rewrite Specfinding From First Principles
+- Include style_gen.md into specfinding conversation
+- Do I need to keep initial_handling.md????
 - Investigate systems for managing context size
   - In practice, I've included everything, which is not accurate
   - Install a very simple flush mechanics around 40k

@@ -37,7 +37,7 @@ if not document:
 
 # Load up the ingest script, pre-filling out the essay we are analyzing
 # Then format the first iteration with an empty living spec (since we haven't extracted yet)
-system_prompt = PromptTemplate.from_template(config.load_prompt_file('specfinding/essay/ingest'), partial_variables={'document': document})
+system_prompt = PromptTemplate.from_template(config.load_prompt_file('specfinding/ingest'), partial_variables={'document': document})
 initial = system_prompt.format(living_spec="")
 
 # Prepare the user query that we will repeatedly run to extract all possible components

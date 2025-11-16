@@ -1,5 +1,7 @@
 # Active Document for Writing System
 
+<!-- This document was produced after a laborious chat with gemini, roughly defining my current idea for how to assemble a generative writer -->
+<!-- This still needs a lot of work with incorporating foreshadowing, research, and many other good authorial abilities -->
 ## Narrative Principles/Components
 
 ### Authorial Intent Document (AID)

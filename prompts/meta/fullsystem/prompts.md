@@ -87,3 +87,4 @@ Your primary instruction is to read the Delta Report and meticulously apply each
 4.  You will then perform the complete update operation and produce the final, polished document as your response.
 
 [[comments]]
+This is a collection of helper prompts that helped managing context across multiple chats while assembling description.md

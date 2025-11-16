@@ -27,13 +27,20 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 -- Clean up everything
 
 # [PRIME] Rewrite Specfinding From First Principles
+- Integrate working state tracking into the specfinding local memory
+- Optimize the token usage of my existing conversation scripts
+  - I'm starting at 22k with curse
+  - Make the components simpler and more straightforward to read
+  - Make the actual conversation controls easier as well
 - Include style_gen.md into specfinding conversation
 - Do I need to keep initial_handling.md????
+  - It works without it
 - Investigate systems for managing context size
+  - Detect when we start discussing a specific idea and track it until we finish
+    - When we finish, I can remove the intervening messages from the context window
+    - Just need to communicate the updated fact to the model in the next message
   - In practice, I've included everything, which is not accurate
-  - Install a very simple flush mechanics around 40k
-    - This may cause issues with mid-context loss, but we can maybe save everything since the last confirmed commit
-- Recast all stories to new IR/prewrite model
+- Recast all stories to new IR/prewrite model (once voice is not sore)
   - Does this include late? Does include mara, level, thousand
 - Validate json schema against updated IR
 - Create new architect that utilises json schema to develop plot plans
@@ -87,6 +94,10 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Incorporating research into world building: https://aistudio.google.com/app/prompts/15p_SWfuw-dzpym6oaOb69b9IUIcnY4wX
 - Research phases for identifying potential themes, plots, etc.?
   - Also useful for naming/etal
+
+# Artistry
+- Doing multiple things with one action
+  - The scene doesn't just advance plot A, or relation B, or theme C, but all 3
 
 # !!! Clean up the Presentation in CLI !!!
 - I was thinking about the story bible though that's only in ai studio

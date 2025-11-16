@@ -195,8 +195,11 @@ class LlmEngine:
     def invoke(self, message: str, context: List[AnyMessage], *args, **kwargs) -> Tuple[str, any]:
         context.append(HumanMessage(content=message))
         response = self._llm.invoke(input=context, *args, **kwargs)
+        usage = self._callback.usage_metadata
+
         if not self._structured:
             context.append(response)
+            usage = response.usage_metadata
             response = response.content
         elif 'raw' in response:
             context.append(response['raw'])
@@ -204,7 +207,6 @@ class LlmEngine:
         else:
             context.append(SystemMessage([response]))
         
-        usage = self._callback.usage_metadata
         self._usage.append(usage)
         self._record_chat(message, response)
         return response, usage

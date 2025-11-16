@@ -27,57 +27,27 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 -- Clean up everything
 
 # [PRIME] Rewrite Specfinding From First Principles
-- What if I can write a mini-essay about the story and pass that in?
-  - Add follow-up conversation with full specfinding
-    - Need to slightly adjust the prompt for receiving a spec document
-    - Technically, there are now 3 avenues: the essay, the hook, and the document
 - Investigate systems for managing context size
   - In practice, I've included everything, which is not accurate
   - Install a very simple flush mechanics around 40k
     - This may cause issues with mid-context loss, but we can maybe save everything since the last confirmed commit
-- Alt agent:
-  - Loop agent for extracting from longform
-  - Or parse predoc
-  - Or start conversation
-    - All exit to the same place
-- Implement agentic layer to dynamically load skill files
-  - Alt Idea:
-    - Split the subsections into files?
-  - Figure out how to verify when a skill load/function call happens
-    - Doesn't seem to be recorded in the current logic
-      - There's nothing in "tool call" but the response seems to formalize "Core Concept"
-  - Work on the detection mechanisms for determining a load is needed
-    - I don't think the current logic has enough to do that
-  - https://leehanchung.github.io/blogs/2025/10/26/claude-skills-deep-dive/
-- Moving back to story development
-  - Recast all stories to new IR model
-  - Compaction layer?
-  - Potentially fill out the other stories
-  - Validate json schema against updated IR
+- Recast all stories to new IR/prewrite model
+  - Does this include late? Does include mara, level, thousand
+- Validate json schema against updated IR
 - Create new architect that utilises json schema to develop plot plans
   - Starting on trying to implement the recursive parliaments
-- Recast scenescript to be engine based if possible
-  - This and plot beats deserve a lot of investigation
-
-Not Fully sure what I'm intending here
-- Follow up agents to develop the specific prompts/input for later stages
-  - Re-exploration of plot and scene development and direction
-  - I believe I have an okay schema 
-- Final architect+writer agent which are run tag-team to make the prose
+  - Fully switch over all story prompts to cohesive
+  - Check writer is still compatible
+- Convert architect+writer into langchain agents (run tag-team to make the prose)
   - The architect plans long-form plot beats and action
   - The writer then takes those plot beats and develops scenes showing them
 
 # [SECONDARY] Identifying Specfinding
-- TODO: me - Update this after finishing the above task
-  - This still has some improvements which aren't captured above
-- Create schema for writer agent
-- Create writer agent (or prompt to produce writer agent from IR)
-- Investigate alternative context assembly
-  - Agent maintains an internal image of what the living document is
-  - Sends that model in every request, no chat history
-    - History would be useful for determining what did/didn't work
-  - Updates model when the response indicates the user agrees with the ai's understanding, basically merges them together.
+- Improve orchestrator for token efficiency: https://aistudio.google.com/app/prompts/1x87pQK4wpb3rNG_S9U9yXkAZbPXOAf9L
 - Merge engines and generation rules as they are both plot involved
+  - Recast scenescript to be engine based if possible
+    - Re-exploration of plot and scene development and direction
+  - This and plot beats deserve a lot of investigation
 - Investigate adding AI critique agents
 - Investigate "Writer Explorer" prompt to refine IR for scene/writer
   - Basically specfinding/writer.md
@@ -85,8 +55,16 @@ Not Fully sure what I'm intending here
   - The beat generation would be combined with the extracted plot
 - Investigate using sub-agents for deep-dives dueing specfinding
 - Is there anyway to track the constants/config files?
+- Investigate compaction layers for merging/reducing prompt bloat
+
+# Skills and Agents
+- Implement agentic layer to dynamically load skill files
+  - Work on the detection mechanisms for determining a load is needed
+    - I don't think the current logic has enough to do that
+  - https://leehanchung.github.io/blogs/2025/10/26/claude-skills-deep-dive/
 
 # Another Look at Long Term Planning
+- Update LlmEngine to auto-create rate limiters
 - Investigate new writers that can provide more detailed long-form scenes
 - Investigate recasting plot planning to use parliament model
 - Use repeated iteration to build longer novel-form scenes

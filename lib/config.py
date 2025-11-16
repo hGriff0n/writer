@@ -17,14 +17,16 @@ def _load_yaml(file):
     try:
         with open(file, 'r', encoding='utf-8') as f:
             return yaml.safe_load(f)
-    except:
+    except Exception as e:
+        print(f'[ERROR]: {e}')
         return {}
     
 def load_markdown(file):
     try:
         with open(file, 'r', encoding='utf-8') as f:
             return _strip_comments(f.read())
-    except:
+    except Exception as e:
+        print(f'[ERROR]: {e}')
         return ''
 
 # For system/program constants that are not mutable

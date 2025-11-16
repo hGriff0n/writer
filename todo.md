@@ -27,14 +27,11 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 -- Clean up everything
 
 # [PRIME] Rewrite Specfinding From First Principles
-- Integrate working state tracking into the specfinding local memory
 - Optimize the token usage of my existing conversation scripts
   - I'm starting at 22k with curse
   - Make the components simpler and more straightforward to read
   - Make the actual conversation controls easier as well
 - Include style_gen.md into specfinding conversation
-- Do I need to keep initial_handling.md????
-  - It works without it
 - Investigate systems for managing context size
   - Detect when we start discussing a specific idea and track it until we finish
     - When we finish, I can remove the intervening messages from the context window

@@ -17,12 +17,14 @@ DEFS = DataConstants()
 parser = ArgumentParser(
     prog='specfinding', description='story spec discussion')
 parser.add_argument('story')
-parser.add_argument('-s', '--input_spec', type=str)
+parser.add_argument('-i', '--input', type=str)
 parser.add_argument('-r', '--review_all', action='store_true')
 parser.add_argument('-e', '--extract_essay', action='store_true')
 parser.add_argument('-m', '--profile',
                     choices=LlmEngine.supported_models(),
                     default=LlmEngine.DEFAULT_MODEL)
+# Skip the specfinding conversation and start with styler_gen.md
+parser.add_argument('-s', '--start_styling', action='store_true')
 
 # Initialize chat app
 args = parser.parse_args()
@@ -42,7 +44,7 @@ def extract_proto_script(args: Namespace) -> str:
             './scripts/spec_from_essay.py',
             args.story,
             '-f',
-            args.input_spec,
+            args.input,
             '-o',
             file
         ])
@@ -53,7 +55,7 @@ def extract_proto_script(args: Namespace) -> str:
 
 
 if args.extract_essay:
-    args.input_spec = extract_proto_script(args)
+    args.input = extract_proto_script(args)
     args.review_all = True
 
 
@@ -136,7 +138,7 @@ class ParsedResponse(object):
 # agent, then we auto append a "review all" command to the end of the input.
 # This will kick off a review procedure for every item in the spec doc when the
 # conversation starts up.
-input_spec = load_markdown(f'./{args.input_spec}') if args.input_spec else ""
+input_spec = load_markdown(f'./{args.input}') if args.input else ""
 if input_spec:
     # TODO: me - parse the input spec into a structured representation
     if args.review_all:

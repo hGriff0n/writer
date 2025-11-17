@@ -266,47 +266,25 @@ A Narrative Rule is synthesized in two parts: its story justification and its fo
 
 #### **4. Beat Generation Rules (The Scene Choreographer)**
 
-This component is the procedural link between high-level plot and low-level scenes, systematically generating "beats" (scene prompts) to control the story's pacing and tone. It produces two core artifacts: The Conductor's Score, a rule set for narrative rhythm, and The Composite Beat Schema, the data structure for the resulting scene brief.
+This component is the procedural link between high-level plot and low-level scenes, systematically generating "beats" (scene prompts) to control the story's pacing and tone. It is primarily handled in a focused follow-up conversation.
 
 ##### Identification Triggers
 
 *   **Plot-to-Scene:** User asks how to turn plot points into scenes.
 *   **Pacing/Tone Control:** User wants to control narrative rhythm, tension, or mood.
-*   **Scene Templates:** User asks for a template or checklist for scenes.
-*   **Planner Logic:** User wants to define rules for a "story planner."
 *   **Scene Transitions:** User asks what type of scene should follow another.
-*   **Keywords:** "rhythm," "flow," "pacing," "scene structure," "beat."
+*   **Keywords:** "rhythm," "flow," "pacing."
 
 ##### Component Synthesis Guide
-
-This component is synthesized by defining its three core parts in order.
 
 ###### 1. Narrative Lenses
 *   **Goal:** Establish a shared vocabulary for the story's narrative qualities.
 *   **Process:** Propose a set of 3-5 lenses derived from existing `Core Concepts`. For each, define its name, meaning, and scale (e.g., `Tension: Low/Medium/High`).
 *   **Check:** The final lens set captures the essential dynamic qualities the creator wants to control.
 
-###### 2. The Conductor's Score
-*   **Goal:** Create conditional rules to guide the story's rhythm from beat to beat.
-*   **Process:** Translate pacing goals into `IF [previous beat state] THEN [target lens profile for next beat]` rules. Test each rule by simulating a short sequence, showing how the rule selects a beat proposal from a `Narrative Engine` to match the target profile, and refine based on feedback.
-*   **Check:** The score has enough rules to govern key narrative transitions, and each has been validated via an approved simulation.
-
-###### 3. Composite Beat Schema
-*   **Goal:** Define the final data structure for a story beat, making the lenses actionable.
-*   **Process:** Design a schema with clear, practical fields for a writer. Map each `Narrative Lens` to one or more fields in the schema (e.g., a high `Tension` lens populates the `potential_complications` field).
-*   **Check:** The schema is a complete writing brief, and every `Narrative Lens` is functionally mapped to at least one field.
-
-##### Integrity Rules
-
-*   **Broken Lens Reference:** Flag a `Conductor's Score` rule that references a non-existent `Narrative Lens`.
-*   **Orphaned Lens:** Flag a `Narrative Lens` that is not mapped to any field in the `Composite Beat Schema`.
-*   **Contradictory Rule:** Flag `Conductor's Score` rules that could trigger from the same condition but demand contradictory target lens profiles.
-*   **Stale Dependency:** Flag the `Conductor's Score` for re-validation if a `Narrative Engine` it depends on has been significantly modified.
-
 ##### Application & Utility
 
-*   **Determine Next Beat Profile:** A story planner uses the **Conductor's Score** as its logic. It analyzes the previous beat's `Narrative Lenses` and applies the Score's rules to determine the target lens profile for the next beat.
-*   **Generate Beat Brief:** The **Composite Beat Schema** is the output data structure. The planner instantiates this schema and populates its fields according to the target lens profile, creating a complete writing brief for prose generation.
+*   **Determine Next Beat Profile:** A story planner uses the narrative lenses to judge the emotional terroir of the current and proposed narrative, a key input to the process for selecting next beats 
 
 ##### Output Format
 
@@ -316,14 +294,6 @@ This component is synthesized by defining its three core parts in order.
 - **Narrative Lenses:**
     - **[Lens Name]:** [Definition of the lens and its scale, e.g., Low/Medium/High]
     - ...
-- **Conductor's Score:**
-    - **Rule:** IF [condition on previous beat's lenses], THEN the next beat should target [target lens profile].
-    - ...
-- **Composite Beat Schema:**
-    - `beat_type`: [e.g., ACTION, DIALOGUE, EXPLORATION]
-    - `primary_objective`: [A clear, one-sentence goal for the scene]
-    - `key_characters`: [List of characters involved]
-    - ... (other relevant fields as defined during synthesis)
 ```
 
 #### **5. The World Codex (The Canon of Facts)**

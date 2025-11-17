@@ -28,12 +28,8 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 
 # [PRIME] Rewrite Specfinding From First Principles
 - Include style_gen.md into specfinding conversation
-  - Update the interaction mode to match orchestrator (mostly there)
-    - Remove some aspects of beat generation from the orchestrator
-      - Mostly everything but the lenses
-      - Allows some more time to really investigate those?
-  - Make more ammenable for snapshotting/piecewise updates
-    - A bit easier as it's more focused on a single rule and not hopping around (so the identify start and rollback is more doable)
+  - Integrate into specfinding script
+    - Add an argument to skip directly to styling
   - Figure out how to integrate these scene aspects into the current writing approach
     - This is defining the rules for selecting/combining proposals 
 - Include specfinding/writer.md into specfinding script
@@ -55,6 +51,11 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Convert architect+writer into langchain agents (run tag-team to make the prose)
   - The architect plans long-form plot beats and action
   - The writer then takes those plot beats and develops scenes showing them
+
+- https://arxiv.org/html/2503.04844v1
+- https://github.com/narrative-first/narrative-context-protocol
+- https://subtxt.app/
+- https://dramatica.com/
 
 # [SECONDARY] Identifying Specfinding
 - Improve orchestrator for token efficiency: https://aistudio.google.com/app/prompts/1x87pQK4wpb3rNG_S9U9yXkAZbPXOAf9L

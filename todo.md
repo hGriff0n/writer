@@ -27,18 +27,26 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 -- Clean up everything
 
 # [PRIME] Rewrite Specfinding From First Principles
-- Optimize the token usage of my existing conversation scripts
-  - I'm starting at 22k with curse
-  - Make the components simpler and more straightforward to read
-  - Make the actual conversation controls easier as well
 - Include style_gen.md into specfinding conversation
+  - Update the interaction mode to match orchestrator (mostly there)
+    - Remove some aspects of beat generation from the orchestrator
+      - Mostly everything but the lenses
+      - Allows some more time to really investigate those?
+  - Make more ammenable for snapshotting/piecewise updates
+    - A bit easier as it's more focused on a single rule and not hopping around (so the identify start and rollback is more doable)
+  - Figure out how to integrate these scene aspects into the current writing approach
+    - This is defining the rules for selecting/combining proposals 
+- Include specfinding/writer.md into specfinding script
+  - Update the writer to the current level
 - Investigate systems for managing context size
-  - Detect when we start discussing a specific idea and track it until we finish
-    - When we finish, I can remove the intervening messages from the context window
-    - Just need to communicate the updated fact to the model in the next message
-  - In practice, I've included everything, which is not accurate
+  - Detect when we start discussing a specific idea and track it until we finish: https://aistudio.google.com/app/prompts/1tUzWztSyO2tq3neM4GOKfEBNvWgvvUtP
 - Recast all stories to new IR/prewrite model (once voice is not sore)
   - Does this include late? Does include mara, level, thousand
+- Run all stories through style&writer prompts
+  - late: https://aistudio.google.com/app/prompts/1Ac3LQVohbNzVERMV2miezByQKpAgntgB
+  - curse
+  - reality
+  - level/mara/thousand
 - Validate json schema against updated IR
 - Create new architect that utilises json schema to develop plot plans
   - Starting on trying to implement the recursive parliaments

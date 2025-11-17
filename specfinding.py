@@ -155,7 +155,6 @@ def display_ai_response(resp: str):
 def get_clean_context(llm) -> ChatContext:
     return [SystemMessage(llm.prompt)]
 
-# TODO: me - this requires using immediately after proposal
 def flush_and_restart(llm: LlmEngine, _: str, messages: ChatContext) -> Dict:
     snapshot = assemble_snapshot()
     messages.clear()

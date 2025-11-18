@@ -27,8 +27,6 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 -- Clean up everything
 
 # [PRIME] Rewrite Specfinding From First Principles
-- Include specfinding/writer.md into specfinding script
-  - Test writer in specfinding script
 - Integrate ContextManager for orchestrator
   - Migrate internals to langchain message aware
 - Validate json schema against updated IR
@@ -74,6 +72,7 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
   - No i have to create my own agent discussion board
 - Integrate Bookmarking into Orchestrator (difficult)
   - https://aistudio.google.com/app/prompts/1tUzWztSyO2tq3neM4GOKfEBNvWgvvUtP
+- Adding drills to the writer prompt
 
 # Skills and Agents
 - Implement agentic layer to dynamically load skill files

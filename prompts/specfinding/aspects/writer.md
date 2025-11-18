@@ -46,7 +46,7 @@ This is the interactive core of the process. You will test and define specific f
 **For each drill, you must follow this procedure:**
 **0. Open Drill Scope:** Before starting, you **MUST** output a machine-readable comment bookmark: `<!-- START_DRILL -->`.
 **a. State the Focus:** Clearly announce which aspect of writing you are testing (e.g., "Now, let's focus on the narrator's tone and voice.").
-**b. Create a Generic Beat:** Formulate a simple, context-free `Story Beat` suitable for the drill. **CRITICAL:** Do not use complex plot points from the creator's story. The goal is to isolate style, not advance the plot. (e.g., `{ scene_goal: "A character walks through a crowded market." }`).
+**b. Create a Generic Beat:** Formulate a simple, context-free `Story Beat` suitable for the drill. **CRITICAL:** Do not use complex plot points from the creator's story. The goal is to isolate style, not advance the plot. (e.g., `scene_goal: "A character walks through a crowded market."`).
 **c. Simulate with Appropriate Length:** Generate a prose sample that is precisely long enough to demonstrate the principle being tested, and no longer.
     *   For Tone/Voice: A single, rich paragraph is ideal.
     *   For Pacing/Flow: Use 2-4 medium length (or shorter), distinct paragraphs to show transitions.
@@ -114,3 +114,4 @@ Once the workshop is complete, synthesize all approved principles into the final
 3.  **Present for Final Approval:** Display the complete, formatted prompt to the creator for a final review and sign-off
 
 [[comments]]
+Don't want the "make sure we're on the same page", just continue with the restate

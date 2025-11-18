@@ -8,7 +8,7 @@ import regex as re
 from io import StringIO
 
 from lib.ai import LlmEngine
-from lib.config import load_config, DataConstants, load_markdown
+from lib.config import Config, DataConstants, load_markdown
 from lib.context import ContextManager
 
 ChatContext = List[AnyMessage]
@@ -31,7 +31,7 @@ parser.add_argument('-o', '--orchestration', action='store_false', default=True)
 
 # Initialize chat app
 args = parser.parse_args()
-config = load_config(DEFS)
+config = Config(DEFS)
 story = config.load_story(args.story)
 
 
@@ -243,65 +243,43 @@ REPL_SCEN: Dict[str, Callable[[LlmEngine, str, ContextManager], Dict]] = {
     '/reset': flush_and_restart_scen,
 }
 
-if args.scene_scripting:
+def run_repl_loop(config: Config, args: Namespace, input_spec: str, prompt_file: str, temperature: float) -> str:
     # If the input spec isn't set, assume it's the input file
     if not input_spec:
         input_spec = load_input_spec()
 
-    # Reset the living document
-    c = ContextManager()
-
     # TODO: Convert the config class to returning filepath
-    p = PromptTemplate.from_template(config.load_prompt_file('specfinding/aspects/style_gen'))
+    p = PromptTemplate.from_template(config.load_prompt_file(prompt_file))
 
     # Initialize the conversation agent
-    llm = LlmEngine(config, args.profile, prompt=p.format(), temperature=0.8)
+    llm = LlmEngine(config, args.profile, prompt=p.format(), temperature=temperature)
 
+    # Prepare the living document and bookmark handler
+    c = ContextManager()
+    
+    try:
+        # Start by sending a hello message with the input context
+        # TODO: me - this doesn't work if no input provided (ie. `load_input_spec`) is empty
+        usage = {'total_tokens': 0}
+        if input_spec:
+            usage = send_message_scen(llm, input_spec, c)
+
+        while True:
+            msg = get_author_msg(usage)
+            usage = REPL_SCEN.get(msg, send_message_scen)(llm, msg, c)
+    except Exception as e:
+        print(f'[ERROR]: {e}')
+
+    llm.chat_log.save(config.output_dir)
+    return input_spec + c.assemble_snapshot()
+
+
+if args.scene_scripting:
     # First: https://aistudio.google.com/app/prompts/1rEbum4Q106PAQOufW9LGb0r0eJZq4KzP
     # Later: https://aistudio.google.com/app/prompts/1W6ztSXtfxrPdUQn5S-tWOSiiX6fEhx1w
     print('starting scene assembly repl')
-    try:
-        usage = {'total_tokens': 0}
-        if input_spec:
-            usage = send_message_scen(llm, input_spec, c)
+    input_spec = run_repl_loop(config, args, input_spec, prompt_file='specfinding/aspects/style_gen', temperature=0.8)
 
-        while True:
-            msg = get_author_msg(usage)
-            usage = REPL_SCEN.get(msg, send_message_scen)(llm, msg, c)
-    except Exception as e:
-        print(f'[ERROR]: {e}')
-
-    llm.chat_log.save(config.output_dir)
-    input_spec += c.assemble_snapshot()
-
-
-# TODO: me - Need to touch up some stuff in the writer prompt first
 if args.writer:
-    # If the input spec isn't set, assume it's the input file
-    if not input_spec:
-        input_spec = load_input_spec()
-
-    # Reset the living document
-    c = ContextManager()
-
-    # TODO: Convert these to returning filepath (this interferes with comments)
-    p = PromptTemplate.from_template(config.load_prompt_file('specfinding/aspects/writer'))
-
-    # Initialize the conversation agent
-    llm = LlmEngine(config, args.profile, prompt=p.format(), temperature=1.3)
-
     print('starting writer styling repl')
-    try:
-        usage = {'total_tokens': 0}
-        pass
-        if input_spec:
-            usage = send_message_scen(llm, input_spec, c)
-
-        while True:
-            msg = get_author_msg(usage)
-            usage = REPL_SCEN.get(msg, send_message_scen)(llm, msg, c)
-            break
-    except Exception as e:
-        print(f'[ERROR]: {e}')
-
-    llm.chat_log.save(config.output_dir)
+    input_spec = run_repl_loop(config, args, input_spec, prompt_file='specfinding/aspects/writer', temperature=1.3)

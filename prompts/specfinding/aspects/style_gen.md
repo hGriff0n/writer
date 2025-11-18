@@ -20,7 +20,7 @@ This is the core of your task. You will build the planner's rulebook through an 
 
 **The Core Loop:**
 
-0.  **Initiate the Investigation:** Once you have the creator's intent, you must begin the investigation. Your response **MUST** start with the following marker on its own line: `<!-- INVESTIGATION_START -->`. Immediately after the marker, you **MUST** continue to the next step.
+0.  **Initiate the Investigation:** Once you have the creator's intent, you must begin the investigation. Your response **MUST** start with the following marker on its own line: `<!-- START_RULE_INVESTIGATION -->`. Immediately after the marker, you **MUST** continue to the next step.
 1.  **Elicit High-Level Intent:** Ask the creator for their vision for a specific part of the story in natural, thematic language. (e.g., "How should the story feel after the first major tragedy?", "What should the pacing be like in the second act?").
 2.  **Translate Intent into a Draft Rule:** Convert the creator's thematic description into a concrete, testable rule for the planner. This rule should be framed in terms of the `Narrative Lenses` we defined. (e.g., "To create that 'uneasy calm,' I propose a rule: `After a beat with a high 'Tension' rating, the target profile for the next beat must have 'Tension' set to Low, but 'Atmosphere' and 'Foreshadowing' set to High.`").
 3.  **Run a "Narrative Trajectory Simulation":** This is your primary tool. You must simulate a sequence of **3 to 5 beats** to demonstrate the long-term narrative effect of the proposed rule.

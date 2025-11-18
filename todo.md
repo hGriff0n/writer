@@ -28,29 +28,38 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 
 # [PRIME] Rewrite Specfinding From First Principles
 - Include style_gen.md into specfinding conversation
-  - Integrate into specfinding script
-    - Add an argument to skip directly to styling
-  - Figure out how to integrate these scene aspects into the current writing approach
-    - This is defining the rules for selecting/combining proposals 
+  - lens mapping isn't looping
+    - https://aistudio.google.com/app/prompts/1P5jngwXMkjtNuegHEVpLzjxYH2jxh1s_
+  - integrate better "coherence" into core conductor prompt
+    - https://aistudio.google.com/app/prompts/19JwJSaSLnLTA0vuPsW3qm2mJxsmCtN9O
+- Test stylegen script with loaded ir
+  - I think this is the inprogress for `late`
 - Include specfinding/writer.md into specfinding script
-  - Update the writer to the current level
-- Investigate systems for managing context size
+  - Update the writer to the current formatting and specificity
+  - Incorporate comments into new script
+  - Consider providing examples or directional hints
+- Integrate ContextManager for orchestrator
+  - Migrate internals to langchain message aware
   - Detect when we start discussing a specific idea and track it until we finish: https://aistudio.google.com/app/prompts/1tUzWztSyO2tq3neM4GOKfEBNvWgvvUtP
-- Recast all stories to new IR/prewrite model (once voice is not sore)
-  - Does this include late? Does include mara, level, thousand
-- Run all stories through style&writer prompts
-  - late: https://aistudio.google.com/app/prompts/1Ac3LQVohbNzVERMV2miezByQKpAgntgB
-  - curse
-  - reality
-  - level/mara/thousand
+    - implementing this for orchestrator is difficult
 - Validate json schema against updated IR
+  - Investigate reporting IR conversations in json, not pseudo-xml
 - Create new architect that utilises json schema to develop plot plans
   - Starting on trying to implement the recursive parliaments
   - Fully switch over all story prompts to cohesive
   - Check writer is still compatible
+- Recast all stories to new IR/prewrite model (once voice is not sore)
+  - Does include mara, level, thousand
+  - `late` needs a prewrite, possibly author update
+- Run all stories through style&writer prompts
+  - curse
+  - reality
+  - level/mara/thousand 
 - Convert architect+writer into langchain agents (run tag-team to make the prose)
   - The architect plans long-form plot beats and action
   - The writer then takes those plot beats and develops scenes showing them
+- Experiment with agentic discussion boards/parliaments for long-term plot extrapolation
+  - No i have to create my own
 
 - https://arxiv.org/html/2503.04844v1
 - https://github.com/narrative-first/narrative-context-protocol

@@ -61,4 +61,7 @@ Once the workshop is complete, synthesize all approved principles into the final
 3.  **Present for Final Approval:** Display the complete, formatted prompt to the creator for a final review and sign-off
 
 [[comments]]
-This needs to have something for incorporating 
+simplify the "writer mandate" so it's easier to understand?
+all authors need "segment of scene" instruction
+report workshop rules in xml tags with comment bookmarks
+include more scenarios and explorations, but with an option to im done

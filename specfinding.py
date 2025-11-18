@@ -1,14 +1,15 @@
 
-from langchain_core.messages import SystemMessage, AnyMessage
+from langchain_core.messages import SystemMessage, AnyMessage, AIMessage
 from langchain_core.prompts import PromptTemplate
 from argparse import ArgumentParser, Namespace
 import subprocess
-from typing import Dict, Set, List, Callable
+from typing import Dict, Set, List, Callable, Optional
 import regex as re
 from io import StringIO
 
 from lib.ai import LlmEngine
 from lib.config import load_config, DataConstants, load_markdown
+from lib.context import ContextManager
 
 ChatContext = List[AnyMessage]
 
@@ -24,7 +25,9 @@ parser.add_argument('-m', '--profile',
                     choices=LlmEngine.supported_models(),
                     default=LlmEngine.DEFAULT_MODEL)
 # Skip the specfinding conversation and start with styler_gen.md
-parser.add_argument('-s', '--start_styling', action='store_true')
+parser.add_argument('-s', '--scene_scripting', action='store_true')
+parser.add_argument('-w', '--writer', action='store_true')
+parser.add_argument('-o', '--orchestration', action='store_false', default=True)
 
 # Initialize chat app
 args = parser.parse_args()
@@ -59,23 +62,14 @@ if args.extract_essay:
     args.review_all = True
 
 
-# Assemble the prompt from a generic template
-# NOTE: The orchestrator doesn't have any templates **yet**
-# TODO: me - Still want to make this use skills, but doesn't seem possible for now
-p = PromptTemplate.from_template(
-    config.load_prompt_file('specfinding/aspects/orchestrator'))
-
-
-# Initialize the conversation agent
-llm = LlmEngine(config, args.profile, prompt=p.format(), temperature=0.8)
-
-
+# TODO: generalize this with the style_gen
 # Define helper methods/types to structure the local state tracking
 PROPOSAL_PARSER = re.compile(
     r"<proposal>(.*)</proposal>.+<impact_report>(.*)</impact_report>", re.DOTALL)
 SIDEBAR_PARSER = re.compile(
     r"<architect_sidebar>(.*)</architect_sidebar>", re.DOTALL)
 EXTRACT_TAG = re.compile(r"<(?P<tag>\w+)>(.*)</(?P=tag)>", re.DOTALL)
+EXTRACT_TAG_SMALL = re.compile(r"<(?P<tag>\w+)>(.*?)</(?P=tag)>", re.DOTALL)
 living_document = {
     'core_concept': set(),
     'narrative_engine': set(),
@@ -93,12 +87,12 @@ def add_updates_to_living_doc(resp: str):
     if not m:
         return
     for tag, operation in EXTRACT_TAG.findall(m.group(1).strip()):
-        for action, content in EXTRACT_TAG.findall(operation.strip()):
+        for action, content in EXTRACT_TAG_SMALL.findall(operation.strip()):
             match action:
                 case 'add': living_document[tag].add(content)
                 case 'remove': living_document[tag].remove(content)
 
-def assemble_snapshot():
+def assemble_snapshot() -> str:
     doc = StringIO()
     for key, aspects in living_document:
         doc.write(f'### {' '.join(k.capitalize() for k in key.split('_'))}')
@@ -133,18 +127,6 @@ class ParsedResponse(object):
         return self._sidebar
 
 
-# Start the initial specfinding conversation
-# If the user provided a prior spec file that was created via the essay extraction
-# agent, then we auto append a "review all" command to the end of the input.
-# This will kick off a review procedure for every item in the spec doc when the
-# conversation starts up.
-input_spec = load_markdown(f'./{args.input}') if args.input else ""
-if input_spec:
-    # TODO: me - parse the input spec into a structured representation
-    if args.review_all:
-        input_spec += "\n/review"
-
-
 # TODO: me - Need to develop a lot of context pruning strategies
 # Helper methods for io/context management
 def get_author_msg(usage: Dict) -> str:
@@ -155,7 +137,8 @@ def display_ai_response(resp: str):
     print(f'AI: {resp}')
 
 def get_clean_context(llm) -> ChatContext:
-    return [SystemMessage(llm.prompt)]
+    m = [SystemMessage(llm.prompt)]
+    return m
 
 def flush_and_restart(llm: LlmEngine, _: str, messages: ChatContext) -> Dict:
     snapshot = assemble_snapshot()
@@ -175,7 +158,7 @@ REPL: Dict[str, Callable[[LlmEngine, str, ChatContext], Dict]] = {
 }
 
 
-def send_message(llm: LlmEngine, msg: str, messages: ChatContext) -> Dict:
+def send_message_orc(llm: LlmEngine, msg: str, messages: ChatContext) -> Dict:
     resp, usage = llm.invoke(msg, messages)
     # TODO: me - parse resp to extract reported updates
     # This uses a lookahead to split the string on the tag while
@@ -190,19 +173,127 @@ def send_message(llm: LlmEngine, msg: str, messages: ChatContext) -> Dict:
         print('!!! [ALERT] You are apporaching Memory Danger Zone [ALERT] !!!')
     return usage
 
+def load_input_spec() -> str:
+    return load_markdown(f'./{args.input}') if args.input else ""
 
-print('starting repl')
-try:
-    messages = get_clean_context(llm)
-    usage = {'total_tokens': 0}
+
+input_spec = ""
+
+# TODO: me - Port over the work from the context manager to here
+# Run the orchestration prompt sub-loop
+if args.orchestration:
+    # If the user provided a prior spec file that was created via the essay extraction
+    # agent, then we auto append a "review all" command to the end of the input.
+    # This will kick off a review procedure for every item in the spec doc when the
+    # conversation starts up.
+    input_spec = load_input_spec()
     if input_spec:
-        usage = send_message(llm, input_spec, messages)
+        # TODO: me - parse the input spec into a structured representation
+        if args.review_all:
+            input_spec += "\n/review"
 
-    while True:
-        msg = get_author_msg(usage)
-        usage = REPL.get(msg, send_message)(llm, msg, messages)
-        break
-except Exception as e:
-    print(f'[ERROR]: {e}')
+    # Assemble the prompt from a generic template
+    # NOTE: The orchestrator doesn't have any templates **yet**
+    # TODO: me - Still want to make this use skills, but doesn't seem possible for now
+    p = PromptTemplate.from_template(
+        config.load_prompt_file('specfinding/aspects/orchestrator'))
+
+    # Initialize the conversation agent
+    llm = LlmEngine(config, args.profile, prompt=p.format(), temperature=0.8)
+
+    print('starting orchestration repl')
+    try:
+        messages = get_clean_context(llm)
+        usage = {'total_tokens': 0}
+        if input_spec:
+            usage = send_message_orc(llm, input_spec, messages)
+
+        while True:
+            msg = get_author_msg(usage)
+            usage = REPL.get(msg, send_message_orc)(llm, msg, messages)
+            # TODO: me - runs one loop
+            break
+    except Exception as e:
+        print(f'[ERROR]: {e}')
+
+    input_spec += assemble_snapshot()
+
+
+# TODO: me - ContextManager isn't fully utilized so this is a bit messy
+def send_message_scen(llm: LlmEngine, msg: str, c: ContextManager) -> Dict:
+    m = get_clean_context(llm).copy()
+    m.extend(AIMessage(ms) for ms in c.context)
+    resp, usage = llm.invoke(msg, m)
+    c.add_to_context(msg)
+    c.add_to_context(resp)
+    display_ai_response(resp)
+    return usage
+
+def flush_and_restart_scen(llm: LlmEngine, _: str, c: ContextManager) -> Dict:
+    snapshot = c.assemble_snapshot()
+    c.clear()
+    usage = send_message_scen(llm, snapshot, c)
+    return usage
+
+REPL_SCEN: Dict[str, Callable[[LlmEngine, str, ContextManager], Dict]] = {
+    'exit': lambda _x, _y, _c: exit(),
+    '/reset': flush_and_restart_scen,
+}
+
+if args.scene_scripting:
+    # If the input spec isn't set, assume it's the input file
+    if not input_spec:
+        input_spec = load_input_spec()
+
+    # Reset the living document
+    c = ContextManager()
+
+    # TODO: Convert the config class to returning filepath
+    p = PromptTemplate.from_template(config.load_prompt_file('specfinding/aspects/style_gen'))
+
+    # Initialize the conversation agent
+    llm = LlmEngine(config, args.profile, prompt=p.format(), temperature=0.8)
+
+    # First: https://aistudio.google.com/app/prompts/1rEbum4Q106PAQOufW9LGb0r0eJZq4KzP
+    # Later: https://aistudio.google.com/app/prompts/1W6ztSXtfxrPdUQn5S-tWOSiiX6fEhx1w
+    print('starting scene assembly repl')
+    try:
+        usage = {'total_tokens': 0}
+        if input_spec:
+            usage = send_message_scen(llm, input_spec, c)
+
+        while True:
+            msg = get_author_msg(usage)
+            usage = REPL.get(msg, send_message_scen)(llm, msg, c)
+            break
+    except Exception as e:
+        print(f'[ERROR]: {e}')
+
+    input_spec += c.assemble_snapshot()
+
+
+
+if args.writer:
+    # TODO: Convert these to returning filepath
+    p = PromptTemplate.from_template(config.load_prompt_file('specfinding/aspects/writer'))
+
+    # Initialize the conversation agent
+    llm = LlmEngine(config, args.profile, prompt=p.format(), temperature=1.3)
+
+    print('starting writer styling repl')
+    try:
+        messages = get_clean_context(llm)
+        usage = {'total_tokens': 0}
+        pass
+        # if input_spec:
+        #     usage = send_message(llm, input_spec, messages)
+
+        # while True:
+        #     msg = get_author_msg(usage)
+        #     usage = REPL.get(msg, send_message)(llm, msg, messages)
+        #     break
+    except Exception as e:
+        print(f'[ERROR]: {e}')
+
 
 llm.chat_log.save(config.output_dir)

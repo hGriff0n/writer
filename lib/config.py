@@ -1,6 +1,7 @@
 
 from dataclasses import dataclass
 from typing import Dict, List, Optional
+from pathlib import Path
 import yaml
 import json
 
@@ -66,7 +67,7 @@ class Directories:
 # TODO: Adjust when I change the aspects to be separated
 class StoryFile:
 
-    def __init__(self, story, path, yaml):
+    def __init__(self, story: str, path: Path, yaml):
         self._story = story
         self._path = path
         self._yaml = yaml
@@ -192,18 +193,22 @@ class Config:
     # Helpers for loading data from prompt and story files
     # TODO: me - Not sure if this is the best approach for
     # development, just cause I won't be iterating there
+    def get_prompt_path(self, prompt: str) -> Path:
+        return Path('.', self.directories.prompts, f'{prompt}.md')
+
     def load_prompt_file(self, prompt: str) -> str:
-        with open(f'./{self.directories.prompts}/{prompt}.md', 'r', encoding='utf-8') as f:
-            return _strip_comments(f.read())
+        return _strip_comments(self.get_prompt_path(prompt).read_text(encoding='utf-8'))
+
+    def get_story_dir(self, story: str) -> Path:
+        return Path('.', self.directories.story, story)
 
     def load_story(self, story: str) -> str:
-        base_file = f'./{self.directories.story}/{story}'
-        with open(f'{base_file}/_story.yaml', 'r', encoding='utf-8') as f:
-            return StoryFile(story, base_file, yaml.safe_load(f))
+        base = self.get_story_dir(story)
+        with open(f'{base}/_story.yaml', 'r', encoding='utf-8') as f:
+            return StoryFile(story, base, yaml.safe_load(f))
 
     def load_story_file(self, story: str, file: str) -> str:
-        with open(f'./{self.directories.story}/{story}/{file}.md', 'r', encoding='utf-8') as f:
-            return _strip_comments(f.read())
+        return _strip_comments(Path(self.get_story_dir(story), f'{file}.md').read_text(encoding='utf-8'))
         
     def load_schema(self, schema: str) -> Dict:
         with open(f'./{self.directories.prompts}/{schema}.json', 'r', encoding='utf-8') as f:

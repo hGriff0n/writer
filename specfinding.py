@@ -18,7 +18,7 @@ DEFS = DataConstants()
 parser = ArgumentParser(
     prog='specfinding', description='story spec discussion')
 parser.add_argument('story')
-parser.add_argument('-i', '--input', type=str)
+parser.add_argument('-i', '--input', type=str, action='append')
 parser.add_argument('-r', '--review_all', action='store_true')
 parser.add_argument('-e', '--extract_essay', action='store_true')
 parser.add_argument('-m', '--profile',
@@ -47,7 +47,7 @@ def extract_proto_script(args: Namespace) -> str:
             './scripts/spec_from_essay.py',
             args.story,
             '-f',
-            args.input,
+            args.input[0],
             '-o',
             file
         ])
@@ -58,7 +58,7 @@ def extract_proto_script(args: Namespace) -> str:
 
 
 if args.extract_essay:
-    args.input = extract_proto_script(args)
+    args.input[0] = extract_proto_script(args)
     args.review_all = True
 
 
@@ -174,7 +174,9 @@ def send_message_orc(llm: LlmEngine, msg: str, messages: ChatContext) -> Dict:
     return usage
 
 def load_input_spec() -> str:
-    return load_markdown(f'./{args.input}') if args.input else ""
+    return '\n\n'.join(
+        load_markdown(f'./{input_file}') if input_file else "" for input_file in args.input
+    )
 
 
 input_spec = ""
@@ -216,6 +218,7 @@ if args.orchestration:
     except Exception as e:
         print(f'[ERROR]: {e}')
 
+    llm.chat_log.save(config.output_dir)
     input_spec += assemble_snapshot()
 
 
@@ -264,17 +267,24 @@ if args.scene_scripting:
 
         while True:
             msg = get_author_msg(usage)
-            usage = REPL.get(msg, send_message_scen)(llm, msg, c)
-            break
+            usage = REPL_SCEN.get(msg, send_message_scen)(llm, msg, c)
     except Exception as e:
         print(f'[ERROR]: {e}')
 
+    llm.chat_log.save(config.output_dir)
     input_spec += c.assemble_snapshot()
 
 
-
+# TODO: me - Need to touch up some stuff in the writer prompt first
 if args.writer:
-    # TODO: Convert these to returning filepath
+    # If the input spec isn't set, assume it's the input file
+    if not input_spec:
+        input_spec = load_input_spec()
+
+    # Reset the living document
+    c = ContextManager()
+
+    # TODO: Convert these to returning filepath (this interferes with comments)
     p = PromptTemplate.from_template(config.load_prompt_file('specfinding/aspects/writer'))
 
     # Initialize the conversation agent
@@ -282,18 +292,16 @@ if args.writer:
 
     print('starting writer styling repl')
     try:
-        messages = get_clean_context(llm)
         usage = {'total_tokens': 0}
         pass
-        # if input_spec:
-        #     usage = send_message(llm, input_spec, messages)
+        if input_spec:
+            usage = send_message_scen(llm, input_spec, c)
 
-        # while True:
-        #     msg = get_author_msg(usage)
-        #     usage = REPL.get(msg, send_message)(llm, msg, messages)
-        #     break
+        while True:
+            msg = get_author_msg(usage)
+            usage = REPL_SCEN.get(msg, send_message_scen)(llm, msg, c)
+            break
     except Exception as e:
         print(f'[ERROR]: {e}')
 
-
-llm.chat_log.save(config.output_dir)
+    llm.chat_log.save(config.output_dir)

@@ -27,24 +27,14 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 -- Clean up everything
 
 # [PRIME] Rewrite Specfinding From First Principles
-- Include style_gen.md into specfinding conversation
-  - lens mapping isn't looping
-    - https://aistudio.google.com/app/prompts/1P5jngwXMkjtNuegHEVpLzjxYH2jxh1s_
-  - integrate better "coherence" into core conductor prompt
-    - https://aistudio.google.com/app/prompts/19JwJSaSLnLTA0vuPsW3qm2mJxsmCtN9O
-- Test stylegen script with loaded ir
-  - I think this is the inprogress for `late`
 - Include specfinding/writer.md into specfinding script
-  - Update the writer to the current formatting and specificity
-  - Incorporate comments into new script
-  - Consider providing examples or directional hints
+  - Test writer in specfinding script
 - Integrate ContextManager for orchestrator
   - Migrate internals to langchain message aware
-  - Detect when we start discussing a specific idea and track it until we finish: https://aistudio.google.com/app/prompts/1tUzWztSyO2tq3neM4GOKfEBNvWgvvUtP
-    - implementing this for orchestrator is difficult
 - Validate json schema against updated IR
   - Investigate reporting IR conversations in json, not pseudo-xml
 - Create new architect that utilises json schema to develop plot plans
+  - Updating engine->writer pipeline to the new scene
   - Starting on trying to implement the recursive parliaments
   - Fully switch over all story prompts to cohesive
   - Check writer is still compatible
@@ -58,8 +48,7 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Convert architect+writer into langchain agents (run tag-team to make the prose)
   - The architect plans long-form plot beats and action
   - The writer then takes those plot beats and develops scenes showing them
-- Experiment with agentic discussion boards/parliaments for long-term plot extrapolation
-  - No i have to create my own
+- Go through all code/prompt and clean up/organize  
 
 - https://arxiv.org/html/2503.04844v1
 - https://github.com/narrative-first/narrative-context-protocol
@@ -77,9 +66,14 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
   - Basically specfinding/writer.md
   - Beat Generation/Authorial tone and style/etc.
   - The beat generation would be combined with the extracted plot
+  - Improve writer with style examples or directional hints?
 - Investigate using sub-agents for deep-dives dueing specfinding
 - Is there anyway to track the constants/config files?
 - Investigate compaction layers for merging/reducing prompt bloat
+- Experiment with agentic discussion boards/parliaments for long-term plot extrapolation
+  - No i have to create my own agent discussion board
+- Integrate Bookmarking into Orchestrator (difficult)
+  - https://aistudio.google.com/app/prompts/1tUzWztSyO2tq3neM4GOKfEBNvWgvvUtP
 
 # Skills and Agents
 - Implement agentic layer to dynamically load skill files

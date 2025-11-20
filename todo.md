@@ -46,7 +46,6 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
   - have an initialization step, for first turn (should work automatically)
     - streamlines some things in the script
   - also can start integrating the writer with specfinding
-  - need to update output to include xml annotations (or make it json)
   - Actions are different now
     - Sequential => Plan
     - Options => Options

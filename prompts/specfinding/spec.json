@@ -1,0 +1,126 @@
+{
+    "type": "object",
+    "description": "The structured response from the Story Conductor.",
+    "required": [
+        "response_mode",
+        "output_data"
+    ],
+    "properties": {
+        "conductor_thought_process": {
+            "type": "string",
+            "description": "Internal monologue applying Narrative Rules, polling Engines, and calculating logic."
+        },
+        "response_mode": {
+            "type": "string",
+            "description": "The active command mode determining the data structure.",
+            "enum": [
+                "initialization",
+                "plot_plan",
+                "ask_for_options",
+                "set_a_scene"
+            ]
+        },
+        "output_data": {
+            "type": "object",
+            "description": "The payload specific to the response mode.",
+            "properties": {
+                "full_world_state_json": {
+                    "type": "string",
+                    "description": "The complete, serialized JSON (or YAML) World State Document to establish the story logic and characters. Only set if response_mode is 'initialization'."
+                },
+                "beats_or_options": {
+                    "type": "array",
+                    "description": "The chronological sequence of plot events. Only set if response_mode is 'plot_plan' or 'ask_for_options'.",
+                    "items": {
+                        "type": "object",
+                        "description": "A standard unit of story progression.",
+                        "required": [
+                            "title",
+                            "beat_summary",
+                            "start_datetime",
+                            "time_since_previous",
+                            "state_change_summary"
+                        ],
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "description": "A short name for this beat or option."
+                            },
+                            "beat_summary": {
+                                "type": "string",
+                                "description": "The narrative description of the event."
+                            },
+                            "start_datetime": {
+                                "type": "string",
+                                "description": "In-world timestamp."
+                            },
+                            "time_since_previous": {
+                                "type": "string",
+                                "description": "Diegetic time elapsed."
+                            },
+                            "state_change_summary": {
+                                "type": "string",
+                                "description": "A brief description of how the world state changes in this beat."
+                            }
+                        }
+                    }
+                },
+                "world_state_delta_json": {
+                    "type": "string",
+                    "description": "A serialized JSON object containing ONLY the fields that have changed or been added. Do not include unchanged data. Only set if response_mode is 'plot_plan' or 'set_a_scene'."
+                },
+                "scene_plan": {
+                    "type": "object",
+                    "description": "A detailed plan for setting a specific scene. Only set if response_mode is 'set_a_scene'.",
+                    "required": [
+                        "goal",
+                        "location",
+                        "atmosphere",
+                        "start_datetime",
+                        "estimated_duration",
+                        "key_events",
+                        "ending_instruction"
+                    ],
+                    "properties": {
+                        "goal": {
+                            "type": "string"
+                        },
+                        "location": {
+                            "type": "string"
+                        },
+                        "atmosphere": {
+                            "type": "string"
+                        },
+                        "start_datetime": {
+                            "type": "string"
+                        },
+                        "estimated_duration": {
+                            "type": "string"
+                        },
+                        "key_events": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "required": [
+                                    "event_description",
+                                    "word_budget"
+                                ],
+                                "properties": {
+                                    "event_description": {
+                                        "type": "string"
+                                    },
+                                    "word_budget": {
+                                        "type": "integer"
+                                    }
+                                }
+                            }
+                        },
+                        "ending_instruction": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

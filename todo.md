@@ -35,17 +35,26 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
   - time seems to be a bit fluid
 
 # [PRIME] Rewrite Specfinding From First Principles
-- Codense IR Sheets to Executable Details
-  - Figure out rules to do so, did it by hand so far
 - Figure out how to use architect in relation to narrative context
+  - Does structured output mean I can give up the output format sections of the prompt?
+    - seems to work out ok
   - Tests so far have been in the same chat window (actually, isn't necessarily bad)
     - I'm using two llms anyway so i can keep the window separate
-  - Figure out what more could be generalized
   - Feed architect through token compactor
+    - https://medium.com/@sahin.samia/prompt-compression-in-large-language-models-llms-making-every-token-count-078a2d1c7e03
+    - https://developers.redhat.com/articles/2024/08/14/llm-compressor-here-faster-inference-vllm
+    - Token Optimization
+      - optimised.md works in some respects, a bit behind in others
+      - https://aistudio.google.com/app/prompts/1FOvMZwU1xFqo8Kg3xaJui-42pjUoSbzE
+      - Cuts tokens in half (vs analyzedPlus which is -1000)
+- Work on improving fidelity of analyzer
+  - Initial attempts haven't really worked
+    - https://aistudio.google.com/app/prompts/1jPlIFKj4y2jiE3LTEjy4A_PUwAzSzNsS (too much compaction?)
+    - https://aistudio.google.com/app/prompts/1HFK6j6vfagjmrW88ePBvoiRgB12KdXt8 (too much thinking?)
 - Update writer.py to new format
   - have an initialization step, for first turn (should work automatically)
     - streamlines some things in the script
-  - also can start integrating the writer with specfinding
+  - also can start integrating the writer.py with specfinding.py
   - Actions are different now
     - Sequential => Plan
     - Options => Options

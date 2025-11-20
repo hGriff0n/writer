@@ -318,7 +318,6 @@ The process is a cascade where each level is given a "problem" (a tableau of req
     *   **E. Await Resolution & Re-Synchronize:** The `Parliament` pauses its loop and waits for the resolver to complete its task. Upon completion, the resolver commits its changes, and the `World State` is updated. `P_N` is now synchronized with the absolute latest reality of the story.
     *   **The loop then continues to the next iteration (`i+1`), inherently using the newly updated `World State` to frame the next debate.**
 
-This somewhat merges with this c
 3.  **Advocate:** Engines advocate for specific outcomes, events, or character actions that would both satisfy the `Tableau` and advance their own internal goals.
 4.  **Synthesize:** `P_N` synthesizes these potentially competing proposals into a sequentially-ordered list of more granular Tableaus.
     1.  **Proposal Aggregation and Option Forming:** The Conductor's first task is to process this raw input into viable, high-level "options."

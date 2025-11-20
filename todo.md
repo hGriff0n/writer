@@ -26,19 +26,39 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 -- Update writer
 -- Clean up everything
 
+- gemini 3 pretty decent coherence, gen whole story
+  - overly sad and morose
+  - didn't gen enough characters
+    - include questions about population principles
+  - have to explicitly say "stop at moment" to prevent full gen
+    - how to decide when to split
+  - time seems to be a bit fluid
+
 # [PRIME] Rewrite Specfinding From First Principles
+- Codense IR Sheets to Executable Details
+  - Figure out rules to do so, did it by hand so far
+- Figure out how to use architect in relation to narrative context
+  - Tests so far have been in the same chat window (actually, isn't necessarily bad)
+    - I'm using two llms anyway so i can keep the window separate
+  - Figure out what more could be generalized
+  - Feed architect through token compactor
+- Update writer.py to new format
+  - have an initialization step, for first turn (should work automatically)
+    - streamlines some things in the script
+  - also can start integrating the writer with specfinding
+  - need to update output to include xml annotations (or make it json)
+  - Actions are different now
+    - Sequential => Plan
+    - Options => Options
+    - () => Scene
 - Integrate ContextManager for orchestrator
   - Migrate internals to langchain message aware
 - Validate json schema against updated IR
   - Investigate reporting IR conversations in json, not pseudo-xml
-- Create new architect that utilises json schema to develop plot plans
-  - Updating engine->writer pipeline to the new scene
-  - Starting on trying to implement the recursive parliaments
-  - Fully switch over all story prompts to cohesive
-  - Check writer is still compatible
+  - switch architect to using json
 - Recast all stories to new IR/prewrite model (once voice is not sore)
   - Does include mara, level, thousand
-  - `late` needs a prewrite, possibly author update
+  - `late` needs a prewrite, author update
 - Run all stories through style&writer prompts
   - curse
   - reality

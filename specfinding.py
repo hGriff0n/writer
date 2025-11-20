@@ -198,7 +198,7 @@ if args.orchestration:
     # NOTE: The orchestrator doesn't have any templates **yet**
     # TODO: me - Still want to make this use skills, but doesn't seem possible for now
     p = PromptTemplate.from_template(
-        config.load_prompt_file('specfinding/aspects/orchestrator'))
+        config.load_prompt_file('specfinding/orchestrator'))
 
     # Initialize the conversation agent
     llm = LlmEngine(config, args.profile, prompt=p.format(), temperature=0.8)
@@ -278,8 +278,8 @@ if args.scene_scripting:
     # First: https://aistudio.google.com/app/prompts/1rEbum4Q106PAQOufW9LGb0r0eJZq4KzP
     # Later: https://aistudio.google.com/app/prompts/1W6ztSXtfxrPdUQn5S-tWOSiiX6fEhx1w
     print('starting scene assembly repl')
-    input_spec = run_repl_loop(config, args, input_spec, prompt_file='specfinding/aspects/style_gen', temperature=0.8)
+    input_spec = run_repl_loop(config, args, input_spec, prompt_file='specfinding/scenegen', temperature=0.8)
 
 if args.writer:
     print('starting writer styling repl')
-    input_spec = run_repl_loop(config, args, input_spec, prompt_file='specfinding/aspects/writer', temperature=1.3)
+    input_spec = run_repl_loop(config, args, input_spec, prompt_file='specfinding/writerstyle', temperature=1.3)

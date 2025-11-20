@@ -1,0 +1,62 @@
+orchestrator - defines a spec finding process for all aspects
+style_gen - split out beat generation and stye, etc to focus on style commonality
+initial_handling - first turn addition to orchestrator to specify how input is handled
+snapshot - split out of instructions for outputting and formatting the snapshot when requested
+extraction - defines a general prompt to parse the living document and extract information according to a json schema
+spec.json - defines the schema for primary writing (no beat gen, no author)
+
+
+folders are all skills relating to specific sub-components
+
+===
+
+A quick prompt I gave to test out gemini 3.
+
+---
+
+I wanting your help to collaboratively build up a prompt for a creative writing system. I've done a lot of work with you already so I have a fair amount of components and examples and we largely have to figure out the way everything fits together.
+
+So far I've developed a set of components that provide a fairly good set of primitives. I have example definitions for a specific story idea we can use to test the final prompt out, although the example definitions include a lot of extraneous development information at the moment.
+
+The specific components I have are
+
+## **1. Core Concepts (The Foundational Truths)**
+
+Core Concepts are the story's unique DNA—foundational, canonical statements that govern all other elements. This component's primary function is to capture both diegetic rules (in-world physics, magic, societal laws) and non-diegetic rules (authorial intent, mandated plot structures, stylistic choices).
+
+## **2. Narrative Engines (The Plot Advocates)**
+
+`Narrative Engines` are goal-driven advocates that act as the primary story drivers. Each engine is a state machine that proposes actions to advance its specific agenda. The overall narrative emerges from the competition between these proposals, which are selected and resolved by an external orchestrator.
+
+## **3. Narrative Rules (The Concrete Mechanics)**
+
+A `Narrative Rule` is a component of the story's "physics engine," translating abstract `Core Concepts` into concrete, executable logic. It is the home for all hard mechanics, such as mathematical formulas, if-then conditional logic, and data schemas for entities (characters, items, etc.).
+
+## **4. Beat Generation Rules (The Scene Choreographer)**
+
+This component is the procedural link between high-level plot and low-level scenes, systematically generating "beats" (scene prompts) to control the story's pacing and tone. It is primarily handled in a focused follow-up conversation.
+
+## **5. The World Codex (The Canon of Facts)**
+
+The World Codex acts as the single source of truth for all canonical facts. It functions as both a queryable repository of lore and a policy manager, defining the origin (user-defined, imported, or AI-generated), structure, and contradiction-handling rules for all world information.
+
+## **6. Selection Rules**
+the planner's rulebook for how the Conductor build a `Scene Intent` from the `Narrative Engine` proposals through an iterative process of simulation and critique.
+
+## **7. Scoping Rules**
+rules for how the Conductor expands a chosen `Scene Intent` into a detailed, annotated scene plan.
+
+The architect we produce will need to have an initialization phase that runs on the first request, unless the user provides an existing state document. This will run a lot of initilization/generation logic, mostly to ensure there is a diverse cast of characters ready, but also to prepare long term nexus points to guide the plot. This will return the initial world state to the user and then enter a loop of plot planning/management. If the user provided an existing document (as in they are restarting a saved run), we skip ahead to this point.
+
+At every iteration of the loop, the user can either Plan the Plot, Ask for Options, or Set a Scene. Each choice will require reading the story state and executing the components and rules to achieve specific purposes.
+
+Plan the Plot:
+In this mode the user is wanting to produce a sequence of high-level story beats, basically asking for the next set of scenes in the ongoing story. In this mode, you will need to read in the existing world state, which may include prior plans, and then run several iterations of the core parliament (ie. the narrative engine simulation plus conductor selection/assembly process), simulating the story progression at each step so that the set of scenes flow narratively into each other based on the intended story. The exact number of beats, the pacing of steps, intended direction of events, and the passage of time are all optional parameters that may be included in the user's requests. The output of this will be a series of plot beats and world state diffs which roughly describe the passage of the narrative at a high level, enough to know roughly what happens.
+
+Ask for Options:
+This is a mode where the user asks for a couple options about what could happen next. Users can provide a number of beats to generate, but the default is 3. In this mode you run that many versions of parliament (each generating 1 beat), ensuring the conductor selects proposals to provide a nice variety of "next actions" while still remaining within the scope of the intended story, basically amounting to different weighting of the various engines.
+
+Set a Scene:
+In this mode the user is wanting to produce a specific scene plan that can be used to guide a separate writer agent in producing the scene. This can be invoked with a specific plan and world diff (such as from the "Plan the Plot" stage) in which case the goal is to develop and flesh out that plot beat into a full scene. This can also be invoked with no instructions at all or a user-input string indicating what should happen in which case you should run one iteration of the parliament and then develop the produced plot beat and diff into a scene plan (the user may also fast forward/jump through time in which case you must simulate the intervening events and update the world state like in "Plan the Plot").
+
+The plot beat tells roughly what should happen and who's involved, but there is a lot of artistic and creative freedom here in how to order and tell the events. The goal is to lay out a sequence of events, actions, dialogue points that implement the intended plot beat in a narratively satisying and coherent way, in line with the story we are trying to tell. This includes making decisions about the length of the scene as the writer is specifically instructed to always act as if it is generating a segment of a larger scene and will not end it unless you specifically instruct it to. This is guided by the scoping rules and the core concepts.

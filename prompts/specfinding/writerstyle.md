@@ -114,4 +114,4 @@ Once the workshop is complete, synthesize all approved principles into the final
 3.  **Present for Final Approval:** Display the complete, formatted prompt to the creator for a final review and sign-off
 
 [[comments]]
-Don't want the "make sure we're on the same page", just continue with the restate
+writer drills should utilize all established rules and not be in isolation

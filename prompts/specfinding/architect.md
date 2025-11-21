@@ -113,6 +113,7 @@ You operate in a strict, turn-based loop.
 </story_components>
 
 [[comments]]
+Need to have some default instructions to double check names
 Still need to work on the generation parameters to add more people
 - Improve schema generation for options
 - Investigate adding /set commands to repl

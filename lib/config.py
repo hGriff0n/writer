@@ -71,6 +71,7 @@ class StoryFile:
         self._story = story
         self._path = path
         self._yaml = yaml
+        self._story_arch = None
         self._principles = None
         self._writer = None
         self._lore = None
@@ -89,12 +90,6 @@ class StoryFile:
         return '\n'.join(self._load(f) for f in files)
     
     @property
-    def fullspec(self) -> str:
-        if not self._fullspec:
-            self._fullspec = self._load(self._yaml.get('fullspec'))
-        return self._fullspec
-    
-    @property
     def title(self) -> str:
         return self._story
 
@@ -105,6 +100,16 @@ class StoryFile:
         return self._principles
 
     @property
+    def narrative_intent(self) -> str:
+        return self._yaml['narrative_intent']
+
+    @property
+    def story_arch(self) -> str:
+        if not self._story_arch:
+            self._story_arch = self._load(self._yaml['story_arch'])
+        return self._story_arch
+
+    @property
     def writer(self) -> str:
         if not self._writer:
             self._writer = self._load(self._yaml['writer'])
@@ -113,16 +118,19 @@ class StoryFile:
     @property
     def first_turn(self) -> str:
         return self._yaml['first_turn']
+    
+    # Potentially removed
+    @property
+    def fullspec(self) -> str:
+        if not self._fullspec:
+            self._fullspec = self._load(self._yaml.get('fullspec'))
+        return self._fullspec
 
     @property
     def lore(self) -> str:
         if not self._lore:
             self._lore = self._load(self._yaml['lore'])
         return self._lore
-
-    @property
-    def narrative_intent(self) -> str:
-        return self._yaml['narrative_intent']
 
     @property
     def generation(self) -> str:

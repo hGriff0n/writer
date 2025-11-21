@@ -21,9 +21,6 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Integrate with Obsidian to simplify export even more
 - Create AI script for running prompt
 
--- Get specfinding agent
--- Get auto-extraction from spec
--- Update writer
 -- Clean up everything
 
 - gemini 3 pretty decent coherence, gen whole story
@@ -34,47 +31,22 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
     - how to decide when to split
   - time seems to be a bit fluid
 
-# [PRIME] Rewrite Specfinding From First Principles
-- Figure out how to use architect in relation to narrative context
-  - Does structured output mean I can give up the output format sections of the prompt?
-    - seems to work out ok
-  - Tests so far have been in the same chat window (actually, isn't necessarily bad)
-    - I'm using two llms anyway so i can keep the window separate
-  - Feed architect through token compactor
-    - https://medium.com/@sahin.samia/prompt-compression-in-large-language-models-llms-making-every-token-count-078a2d1c7e03
-    - https://developers.redhat.com/articles/2024/08/14/llm-compressor-here-faster-inference-vllm
-    - Token Optimization
-      - optimised.md works in some respects, a bit behind in others
-      - https://aistudio.google.com/app/prompts/1FOvMZwU1xFqo8Kg3xaJui-42pjUoSbzE
-      - Cuts tokens in half (vs analyzedPlus which is -1000)
-- Work on improving fidelity of analyzer
-  - Initial attempts haven't really worked
-    - https://aistudio.google.com/app/prompts/1jPlIFKj4y2jiE3LTEjy4A_PUwAzSzNsS (too much compaction?)
-    - https://aistudio.google.com/app/prompts/1HFK6j6vfagjmrW88ePBvoiRgB12KdXt8 (too much thinking?)
+# [PRIME] Rewrite Specfinding From First Principles=
 - Update writer.py to new format
-  - have an initialization step, for first turn (should work automatically)
-    - streamlines some things in the script
-  - also can start integrating the writer.py with specfinding.py
-  - Actions are different now
-    - Sequential => Plan
-    - Options => Options
-    - () => Scene
+  - Determine how to save state, given plot and scenes and prose
+  - How to get gemini to stay on output
 - Integrate ContextManager for orchestrator
   - Migrate internals to langchain message aware
-- Validate json schema against updated IR
-  - Investigate reporting IR conversations in json, not pseudo-xml
-  - switch architect to using json
 - Recast all stories to new IR/prewrite model (once voice is not sore)
   - Does include mara, level, thousand
   - `late` needs a prewrite, author update
+  - `thousand` or `mara` would be important for talking to others
 - Run all stories through style&writer prompts
   - curse
   - reality
   - level/mara/thousand 
-- Convert architect+writer into langchain agents (run tag-team to make the prose)
-  - The architect plans long-form plot beats and action
-  - The writer then takes those plot beats and develops scenes showing them
-- Go through all code/prompt and clean up/organize  
+- Go through all code/prompt and clean up/organize
+  - Incorporate names thing in writer.py initialization to prompt?
 
 - https://arxiv.org/html/2503.04844v1
 - https://github.com/narrative-first/narrative-context-protocol
@@ -95,12 +67,17 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
   - Improve writer with style examples or directional hints?
 - Investigate using sub-agents for deep-dives dueing specfinding
 - Is there anyway to track the constants/config files?
+- Convert architect+writer into langchain agents (run tag-team to make the prose)
+  - The architect plans long-form plot beats and action
+  - The writer then takes those plot beats and develops scenes showing them
 - Investigate compaction layers for merging/reducing prompt bloat
 - Experiment with agentic discussion boards/parliaments for long-term plot extrapolation
   - No i have to create my own agent discussion board
 - Integrate Bookmarking into Orchestrator (difficult)
   - https://aistudio.google.com/app/prompts/1tUzWztSyO2tq3neM4GOKfEBNvWgvvUtP
 - Adding drills to the writer prompt
+- Validate json schema against updated IR
+  - Investigate reporting IR conversations in json, not pseudo-xml
 
 # Skills and Agents
 - Implement agentic layer to dynamically load skill files
@@ -110,6 +87,7 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 
 # Another Look at Long Term Planning
 - Update LlmEngine to auto-create rate limiters
+  - Update configs to new tier 1
 - Investigate new writers that can provide more detailed long-form scenes
 - Investigate recasting plot planning to use parliament model
 - Use repeated iteration to build longer novel-form scenes
@@ -130,6 +108,19 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Incorporating research into world building: https://aistudio.google.com/app/prompts/15p_SWfuw-dzpym6oaOb69b9IUIcnY4wX
 - Research phases for identifying potential themes, plots, etc.?
   - Also useful for naming/etal
+
+# Optimizing Tokens
+- Feed architect through token compactor
+  - https://medium.com/@sahin.samia/prompt-compression-in-large-language-models-llms-making-every-token-count-078a2d1c7e03
+  - https://developers.redhat.com/articles/2024/08/14/llm-compressor-here-faster-inference-vllm
+  - Token Optimization
+    - optimised.md works in some respects, a bit behind in others
+    - https://aistudio.google.com/app/prompts/1FOvMZwU1xFqo8Kg3xaJui-42pjUoSbzE
+    - Cuts tokens in half (vs analyzedPlus which is -1000)
+- Work on improving fidelity of analyzer
+  - Initial attempts haven't really worked
+    - https://aistudio.google.com/app/prompts/1jPlIFKj4y2jiE3LTEjy4A_PUwAzSzNsS (too much compaction?)
+    - https://aistudio.google.com/app/prompts/1HFK6j6vfagjmrW88ePBvoiRgB12KdXt8 (too much thinking?)
 
 # Artistry
 - Doing multiple things with one action

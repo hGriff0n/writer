@@ -157,7 +157,6 @@ class LlmEngine:
 
         # Setup the rest of the engine.
         self._llm = init_model(self._model_config)
-        self._callback = UsageMetadataCallbackHandler()
         self._prompt = prompt if prompt else config.load_prompt_file(prompt_file)
         self._log = ChatLog(template=self._prompt, conversation=[])
         self._usage = UsageTracker(self._model_name, config.constants)
@@ -165,6 +164,7 @@ class LlmEngine:
         self._structured = schema is not None
         if self._structured:
             self._llm = self._llm.with_structured_output(schema, method='json_schema', include_raw=True)
+        self._callback = UsageMetadataCallbackHandler()
 
     def _record_chat(self, message: str, response: str):
         self._log.conversation.extend([
@@ -192,10 +192,9 @@ class LlmEngine:
     def usage_stats(self) -> UsageTracker:
         return self._usage
 
-    def invoke(self, message: str, context: List[AnyMessage], *args, **kwargs) -> Tuple[str, any]:
+    def invoke(self, message: str, context: List[AnyMessage], *args, **kwargs) -> Tuple[str | Dict, Dict]:
         context.append(HumanMessage(content=message))
         response = self._llm.invoke(input=context, *args, **kwargs)
-        usage = self._callback.usage_metadata
 
         if not self._structured:
             context.append(response)
@@ -203,8 +202,10 @@ class LlmEngine:
             response = response.content
         elif 'raw' in response:
             context.append(response['raw'])
+            usage = context[-1].usage_metadata
             response = response['parsed']
         else:
+            usage = self._callback.usage_metadata
             context.append(SystemMessage([response]))
         
         self._usage.append(usage)

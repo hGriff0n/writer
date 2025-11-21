@@ -2,7 +2,6 @@
 from argparse import ArgumentParser
 import json
 from typing import Dict, List, Tuple
-import yaml
 
 from lib.ai import LlmEngine
 from lib.config import load_config, DataConstants
@@ -10,7 +9,6 @@ from lib.config import load_config, DataConstants
 from langchain_core.messages import AnyMessage, AIMessage, SystemMessage
 from langchain_core.prompts import PromptTemplate
 from langchain_core.rate_limiters import InMemoryRateLimiter
-
 
 
 DEFS = DataConstants()
@@ -31,6 +29,8 @@ parser.add_argument('-r', '--runs', type=int, default=0)
 args = parser.parse_args()
 config = load_config(DEFS)
 story = config.load_story(args.story)
+if args.story != 'late':
+    raise Exception("Only 'late' and 'curse' stories are currently supported")
 
 #
 # The current `LlmEngine` approach "assumes" one prompt per llm
@@ -41,14 +41,10 @@ story = config.load_story(args.story)
 
 # Assemble the prompt from a generic template
 # This uses a mix of `{template}` and xml tags
-p = PromptTemplate.from_template(config.load_prompt_file('architect'))
+p = PromptTemplate.from_template(
+    config.load_prompt_file('specfinding/architect'))
 arch_prompt = p.format(
-    narrative_intent=story.narrative_intent,
-    beat_assembly=story.generation,
-    core_concepts=story.core_concepts,
-    engines=story.engines,
-    rules=story.rules,
-    schema=story.schemas
+    story_arch=story.story_arch
 )
 
 # The architect is a multi-purpose agent dealing with all things about plot
@@ -60,12 +56,21 @@ arch_prompt = p.format(
 # options, which will provide `3` different ways for progressing the story
 # Gemma is not as capable at following the instructions
 # https://ai.google.dev/gemini-api/docs/rate-limits
-pro_limiter = InMemoryRateLimiter(
-    requests_per_second=2 / 60,  # 5 RPM for 2.5pro (so the docs say)
-    check_every_n_seconds=0.1,  # Wake up every 100 ms
-    max_bucket_size=5,
+# pro_limiter = InMemoryRateLimiter(
+#     requests_per_second=2 / 60,  # 5 RPM for 2.5pro (so the docs say)
+#     check_every_n_seconds=0.1,  # Wake up every 100 ms
+#     max_bucket_size=5,
+# )
+
+# TODO: me - how does this work in ai studio but not here???
+spec = config.load_schema('specfinding/spec')
+architect = LlmEngine(
+    config,
+    args.profile,
+    prompt=arch_prompt,
+    temperature=1,
+    schema=spec
 )
-architect = LlmEngine(config, args.profile, prompt=arch_prompt, temperature=0.4, rate_limiter=pro_limiter)
 
 # The writer is solely responsible for taking the plot beat provided by the
 # architect and expand it into an actual chapter of prose that extends the
@@ -74,85 +79,93 @@ architect = LlmEngine(config, args.profile, prompt=arch_prompt, temperature=0.4,
 # Finetunes??? https://huggingface.co/ToastyPigeon/Gemma-3-Starshine-12B
 # Or other models: https://eqbench.com/creative_writing.html (Kimi)
 # Or Gemma 2: https://huggingface.co/lemon07r/Gemma-2-Ataraxy-9B
-flash_limiter = InMemoryRateLimiter(
-    requests_per_second=10 / 60,  # 10 RPM for 2.5flash
-    check_every_n_seconds=0.1,    # Wake up every 100 ms
-    max_bucket_size=5,
+# flash_limiter = InMemoryRateLimiter(
+#     requests_per_second=10 / 60,  # 10 RPM for 2.5flash
+#     check_every_n_seconds=0.1,    # Wake up every 100 ms
+#     max_bucket_size=5,
+# )
+writer = LlmEngine(
+    config,
+    args.profile,
+    prompt=story.writer,
+    temperature=1
 )
-writer = LlmEngine(config, args.profile, prompt=story.writer, temperature=1.7, flash=True)
+
+
+# TODO: me - Merge with ContextManager?
+class Context(object):
+    messages: List[AnyMessage] = []
+    tokens: int = 0
+
+
+architect_context = Context()
+architect_context.messages = [SystemMessage(content=architect.prompt)]
+
+write_context = Context()
+write_context.messages = [SystemMessage(content=writer.prompt)]
+
+# TODO: me - integrate better world state tracking
+global_world_state = {}
 
 
 #
 # Wrapper for sending a message to the llm
 #
-def send_message(llm: LlmEngine, message: str,
-                 context: List[AnyMessage]) -> str:
-    if context is None:
+def send_message(llm: LlmEngine, message: str, context: Context) -> str | Dict:
+    if context.messages is None:
         raise Exception("Context must be specified")
 
-    # Assemble prompt and context
-    # TODO: me - Eventually use more memory channels
-    input = [SystemMessage(content=llm.prompt)]
-    if context:
-        input.append(SystemMessage(
-            f'NARRATIVE CONTEXT: {context[-1].content}'))
-    context.clear()
-    context.extend(input)
+    resp, usage = llm.invoke(message, context.messages)
+    context.tokens = usage['total_tokens']
+    return resp
 
-    # Call the llm and record the request in the chat-log
-    return llm.invoke(message, context)
-
-
-# TODO: me - Figure out a way to control pacing generically
-EXTRA = "\npacing_modifier: 1" if story.title == 'reality' else ''
 
 # Helper method for splitting the next input from the existing plan.
-# If there are no planned inputs currently, this requests a new set 
-REQUEST_PLAN = f"""
-directive:
-    mode: Sequential{EXTRA}
-    count: 7
-"""
+# If there are no planned inputs currently, this requests a new set
+REQUEST_PLAN = f"""plan 7 beats"""
 PLOT_PLAN = []
 def request_new_plan():
     global PLOT_PLAN
     plan = send_message(architect, REQUEST_PLAN, write_context)
-    PLOT_PLAN = [yaml.safe_dump(o) for o in next(yaml.safe_load_all(plan))]
+    print(plan.keys())
+    PLOT_PLAN = plan['plan_or_options']
+
 
 def get_next_input_from_plan():
     global PLOT_PLAN
     if not PLOT_PLAN:
         request_new_plan()
-    
-    prompt, PLOT_PLAN = PLOT_PLAN[0], PLOT_PLAN[1:]
-    return prompt
+
+    scene, PLOT_PLAN = PLOT_PLAN[0], PLOT_PLAN[1:]
+    return scene
 
 
 # Helper method for requesting potential next options from the planner
-CHOICE_PROMPT = f"""
-directive:
-    mode: Options{EXTRA}
-    count: 3
-"""
-def summarize_plot_beats(beats: List[str]) -> List[str]:
-    return [o['beat_summary' if story.title == 'curse' else 'title'] for o in beats]
+CHOICE_PROMPT = f"""3 options for next beat"""
+def summarize_plot_beats(beats: List[Dict]) -> List[str]:
+    return [o['title'] for o in beats]
 
-def ask_for_ideas(context: List[AnyMessage]) -> Tuple[List[str], List[str]]:
-    output = send_message(architect, CHOICE_PROMPT, context)
-    options = next(yaml.safe_load_all(output))
-    return summarize_plot_beats(options), [yaml.safe_dump(o) for o in options]
+# TODO: me - remove context for options
+def ask_for_ideas(context: Context) -> Tuple[List[str], List[str]]:
+    resp = send_message(architect, CHOICE_PROMPT, context)
+    options = resp['plan_or_options']
+    return summarize_plot_beats(options), options
 
 
+# TODO: me - this will have to change with the plans separately
 # TODO: me - would this need to parsed into yaml?
 # Allow for resuming an in-progress story
 if args.resume:
+    print("More investigation of state restoration")
+    exit()
     print("Loading in-progress story...")
     file = f'{config.directories.story}/{story.title}/principles/tmp.json'
     with open(file, 'r', encoding='utf-8') as f:
         story = json.load(f)
-    
+
     print("Restoring prior context...")
-    writer.chat_log.conversation.extend({"role": "AI", "msg": chap} for chap in story['chapters'])
+    writer.chat_log.conversation.extend(
+        {"role": "AI", "msg": chap} for chap in story['chapters'])
     write_context = [AIMessage(content=story['chapters'][-1])]
 
     print(f"Restoring current plan...")
@@ -165,13 +178,9 @@ if args.resume:
 # start command and start writing automatically.
 else:
     print("Starting first turn")
-    START = story.first_turn
-    arch_context: List[AnyMessage] = []
-    plan = send_message(architect, START, arch_context)
-
-    write_context: List[AnyMessage] = []
-    text = send_message(writer, plan, write_context)
-    print(text)
+    ws = send_message(architect, story.first_turn, architect_context)
+    global_world_state = json.loads(ws['full_world_state_json'])
+    print(f"Initial World State: {json.dumps(global_world_state, indent=4)}")
 
 
 # TODO: me - This is the closest thing I have to the approach I want
@@ -188,57 +197,67 @@ else:
 # If the `runs` parameter was set, automate the process
 # Technically, this actually produces args + 1 chapters
 if args.runs > 0:
-    import time
-    for i in range(0, args.runs):
-        print(f'Writing chapter {i} out of {args.runs}...')
-        prompt = get_next_input_from_plan()
-        response = send_message(writer, prompt, write_context)
-        print(f'Completed chapter {i} out of {args.runs}...')
-        time.sleep(12)
-    book = [response for response in writer.chat_log.having_role('AI')]
-    with open('./.tmp/book.txt', 'w', encoding='utf-8') as f:
-        f.write('\n---\n'.join(book))
-    print(f'Finished writing {args.runs} chapters to ./tmp/book.txt')
+    print('exiting')
+    pass
+    # import time
+    # for i in range(0, args.runs):
+    #     print(f'Writing chapter {i} out of {args.runs}...')
+    #     prompt = get_next_input_from_plan()
+    #     response = send_message(writer, prompt, write_context)
+    #     print(f'Completed chapter {i} out of {args.runs}...')
+    #     time.sleep(12)
+    # book = [response for response in writer.chat_log.having_role('AI')]
+    # with open('./.tmp/book.txt', 'w', encoding='utf-8') as f:
+    #     f.write('\n---\n'.join(book))
+    # print(f'Finished writing {args.runs} chapters to ./tmp/book.txt')
 
 
 #
 # Keep writing until you want to stop
 #
 # At the moment, there are two "commands":
-#   - whereami, /context: print prior chapter
+#   - /context: print prior chapter
 #   - exit, /finish: stop the loop
-#   - help, /help: request ai help for generating next actions
+#   - /help: request ai help for generating next actions
 #
 # All other input is sent directly to the model as the 'Plot Direction'
 # along with the story constraints. History is provided through context
 else:
+    # TODO: me - This needs to be reworked
     while True:
         prompt = input("Change> ").strip()
         if prompt == "exit" or prompt == "/finish":
             break
-        if prompt in ["whereami", "/context"]:
-            print(write_context[-1].content)
+        if prompt.lower() == "/context":
+            print(write_context[-1].messages.content)
             continue
-        if prompt in ["help", "/help"]:
+        if prompt.lower() == "/help":
             PLOT_PLAN.clear()
-            display, options = ask_for_ideas(write_context)
+            display, options = ask_for_ideas(architect_context)
             print(f'A: {display[0]}')
             print(f'B: {display[1]}')
             print(f'C: {display[2]}')
             choice = input("Select Option (A/B/C)>").lower()
-            prompt = {'a': options[0], 'b': options[1], 'c': options[2]}[choice]
-        if prompt in ["plan", "/plan"]:
+            prompt = {'a': options[0], 'b': options[1],
+                      'c': options[2]}[choice]
+        if prompt.lower() == "/plan":
             if not PLOT_PLAN:
                 request_new_plan()
             print('- ' + '\n- '.join(summarize_plot_beats(PLOT_PLAN)))
             continue
 
-        # Allow for planning of plot events
+        # Allow for automated planning of plot events
         if not prompt:
             prompt = get_next_input_from_plan()
         else:
+            # TODO: me - also need to update the architect context as it was also invalidated
             PLOT_PLAN.clear()
-        response = send_message(writer, prompt, write_context)
+            prompt = send_message(
+                architect, f'plan 1 beat {prompt}', architect_context)
+
+        # TODO: me - don't know how to handle scene intermixing here
+        scene = send_message(architect, prompt, architect_context)['scene_plan']
+        response = send_message(writer, scene, write_context)
         print(response)
 
 
@@ -255,4 +274,5 @@ arch_file = architect.chat_log.save(config.output_dir)
 # This is to enable continuations through the --resume flag
 book = [response for response in writer.chat_log.having_role('AI')]
 with open(f'./{config.directories.story}/{story.title}/tmp.json', 'w', encoding='utf-8') as f:
-    json.dump({ 'chapters': book, 'writer_file': chat_file, 'architect': arch_file, 'plan': PLOT_PLAN }, f, ensure_ascii=False, indent=4)
+    json.dump({'chapters': book, 'writer_file': chat_file, 'architect': arch_file,
+              'plan': PLOT_PLAN}, f, ensure_ascii=False, indent=4)

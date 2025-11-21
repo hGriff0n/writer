@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple
 from lib.ai import LlmEngine
 from lib.config import load_config, DataConstants
 
-from langchain_core.messages import AnyMessage, AIMessage, SystemMessage
+from langchain_core.messages import AnyMessage, AIMessage, SystemMessage, HumanMessage
 from langchain_core.prompts import PromptTemplate
 from langchain_core.rate_limiters import InMemoryRateLimiter
 
@@ -42,7 +42,7 @@ if args.story != 'late':
 # Assemble the prompt from a generic template
 # This uses a mix of `{template}` and xml tags
 p = PromptTemplate.from_template(
-    config.load_prompt_file('specfinding/architect'))
+    config.load_prompt_file('architect'))
 arch_prompt = p.format(
     story_arch=story.story_arch
 )
@@ -62,7 +62,6 @@ arch_prompt = p.format(
 #     max_bucket_size=5,
 # )
 
-# TODO: me - how does this work in ai studio but not here???
 spec = config.load_schema('specfinding/spec')
 architect = LlmEngine(
     config,
@@ -145,34 +144,35 @@ CHOICE_PROMPT = f"""3 options for next beat"""
 def summarize_plot_beats(beats: List[Dict]) -> List[str]:
     return [o['title'] for o in beats]
 
-# TODO: me - remove context for options
 def ask_for_ideas(context: Context) -> Tuple[List[str], List[str]]:
     resp = send_message(architect, CHOICE_PROMPT, context)
     options = resp['plan_or_options']
     return summarize_plot_beats(options), options
 
+def save_file_path(config, story) -> str:
+    return f'./{config.directories.story}/{story.title}/resume.json'
 
-# TODO: me - this will have to change with the plans separately
-# TODO: me - would this need to parsed into yaml?
 # Allow for resuming an in-progress story
 if args.resume:
-    print("More investigation of state restoration")
-    exit()
     print("Loading in-progress story...")
-    file = f'{config.directories.story}/{story.title}/principles/tmp.json'
-    with open(file, 'r', encoding='utf-8') as f:
+    with open(save_file_path(config, story), 'r', encoding='utf-8') as f:
         story = json.load(f)
 
     print("Restoring prior context...")
-    writer.chat_log.conversation.extend(
-        {"role": "AI", "msg": chap} for chap in story['chapters'])
-    write_context = [AIMessage(content=story['chapters'][-1])]
+    write_context.messages.extend(
+        AIMessage(content=msg) for msg in story['prose']
+    )
+    architect_context.messages.extend(
+        AIMessage(content=msg) for msg in story['plan']
+    )
+    global_world_state = story.get('state', {})
 
+    # TODO: me - I believe this needs to handle 'parsed'??
     print(f"Restoring current plan...")
-    PLOT_PLAN = story.get('plan', [])
+    PLOT_PLAN = architect_context.messages[-1].content['plan_or_options'][-story['plan_counter']:]
 
-    print(f"Loaded previous story from {file}")
-    print(write_context[0].content)
+    print(f"Loaded previous story...")
+    print(write_context[-1].content)
 
 # Otherwise we're starting a new story, so simply load up the default
 # start command and start writing automatically.
@@ -223,9 +223,11 @@ if args.runs > 0:
 # All other input is sent directly to the model as the 'Plot Direction'
 # along with the story constraints. History is provided through context
 else:
-    # TODO: me - This needs to be reworked
+    def report_tokens():
+        return f'A:{architect_context.tokens}|W:{write_context.tokens}>'
+
     while True:
-        prompt = input("Change> ").strip()
+        prompt = input(report_tokens()).strip()
         if prompt == "exit" or prompt == "/finish":
             break
         if prompt.lower() == "/context":
@@ -240,6 +242,10 @@ else:
             choice = input("Select Option (A/B/C)>").lower()
             prompt = {'a': options[0], 'b': options[1],
                       'c': options[2]}[choice]
+            # Remove the request for an option and the ai response
+            # And replace it with the selected option to keep the context accurate
+            del architect_context.messages[-2:]
+            architect_context.messages.append(AIMessage(content=prompt))
         if prompt.lower() == "/plan":
             if not PLOT_PLAN:
                 request_new_plan()
@@ -250,14 +256,31 @@ else:
         if not prompt:
             prompt = get_next_input_from_plan()
         else:
-            # TODO: me - also need to update the architect context as it was also invalidated
+            num_rem = len(PLOT_PLAN)
+            # Reject any unpursued plot plans from the context because they are now invalidated
+            # TODO: me - probably a sign I should be tracking this someway else
+            if num_rem > 0:
+                del architect_context.messages[-1].content['parsed']['plan_or_options'][-num_rem:]
             PLOT_PLAN.clear()
             prompt = send_message(
                 architect, f'plan 1 beat {prompt}', architect_context)
 
-        # TODO: me - don't know how to handle scene intermixing here
+        # TODO: me - Need to update world state
         scene = send_message(architect, prompt, architect_context)['scene_plan']
-        response = send_message(writer, scene, write_context)
+
+        context_start = len(write_context.messages)
+        response = []
+        # TODO: me - Technically, should aim for splitting by 500/600 words
+        for event in scene['key_events']:
+            word_budget = event.get('word_target', 150) * 2
+            response.append(
+                send_message(writer, f'{scene}\nStop after {event['event_description']} {word_budget} words', write_context)
+            )
+        write_context.messages = write_context.messages[:context_start]
+        write_context.messages.append(HumanMessage(content=scene))
+
+        response = '\n'.join(response)
+        write_context.messages.append(AIMessage(content='\n'.join(response)))
         print(response)
 
 
@@ -272,7 +295,20 @@ arch_file = architect.chat_log.save(config.output_dir)
 # Aside from saving in the same location as the story files ???
 # Save the current state of generation in a temp file in the story directory
 # This is to enable continuations through the --resume flag
+# TODO: me - This should be done based on the context tracking, but that has it's own issues currently
 book = [response for response in writer.chat_log.having_role('AI')]
-with open(f'./{config.directories.story}/{story.title}/tmp.json', 'w', encoding='utf-8') as f:
-    json.dump({'chapters': book, 'writer_file': chat_file, 'architect': arch_file,
-              'plan': PLOT_PLAN}, f, ensure_ascii=False, indent=4)
+plan = [response for response in architect.chat_log.having_role('AI')]
+savefile = {
+    'prose': book,
+    'plan': plan,
+    # Number of planned plot points remaining before requesting a new plan
+    'plan_counter': len(PLOT_PLAN),
+    'state': global_world_state,
+    'files': {
+        'writer_file': chat_file,
+        'architect_file': arch_file
+    }
+}
+
+with open(save_file_path(config, story), 'w', encoding='utf-8') as f:
+    json.dump(savefile, f, ensure_ascii=False, indent=4)

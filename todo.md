@@ -2,11 +2,6 @@
 https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Investigate upgrading to paid tier (OR https://vast.ai/): paid
 
-- the cohesive specfinding approach works very well in practice
-  - pretty close to the by hand construction
-  - has some issues, notably with specifics and schemas
-  - also requires very fine-grained context management
-
 # Tracks
 - Specfinding Agents
 - Improving Specfinding Search
@@ -31,13 +26,10 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
     - how to decide when to split
   - time seems to be a bit fluid
 
-# [PRIME] Rewrite Specfinding From First Principles
-- Go through all code/prompt and clean up/organize
-
+# [SECOND] Migrate All Stories to New Approach
+- Document Development Pipeline
 _premise >ingest+orchestrator> designdoc >scenegen> generation >writerstyle> author
                            ---------------------------+-->analyzer> components
-
-# [SECOND] Migrate All Stories to New Approach
 - `curse`
   - [~] designdoc
   - [ ] components
@@ -103,7 +95,7 @@ _premise >ingest+orchestrator> designdoc >scenegen> generation >writerstyle> aut
 - Update LlmEngine to auto-create rate limiters
   - Update configs to new tier 1
 - Investigate new writers that can provide more detailed long-form scenes
-- Investigate otherways of exploring plot/story ideas
+- Investigate other ways of exploring plot/story ideas
 - Investigate recasting plot planning to use parliament model
 - Use repeated iteration to build longer novel-form scenes
   - https://aistudio.google.com/app/prompts/179Q4SpXMnAfGWaw_M8E_HiqobQcFIQ8g

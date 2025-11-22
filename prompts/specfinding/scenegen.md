@@ -92,6 +92,5 @@ Finally, synthesize all decisions into a single, formal data structure for the c
 2.  **The Composite Beat Schema:** The final, approved schema, wrapped in `<composite_beat_schema>` tags.
 
 [[comments]]
-wasn't waiting for approval before continuing
 narrative lenses need a lot of refinement
 might not be the ideal metaphor to use

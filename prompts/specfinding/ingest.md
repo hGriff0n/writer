@@ -226,3 +226,6 @@ When reporting a list of World Codex Facts, the output list must be structured l
 <living_spec>
 {living_spec}
 </living_spec>
+
+[[comments]]
+can i improve this to extract more useful items with critique/cot/parallel?

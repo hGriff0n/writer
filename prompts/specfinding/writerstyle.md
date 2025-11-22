@@ -41,12 +41,14 @@ This is the interactive core of the process. You will test and define specific f
             `<rule>A `Story Beat Schema` provides directives for a *segment* of an ongoing scene. Your primary task is to inhabit this segment fully. Unless a beat contains an explicit directive to end the scene (e.g., `scene_end: true`), you must not summarize, conclude, or wrap it up. Your final sentence should feel like a natural pause from which the scene could immediately continue, not an ending.</rule>`
         3.  Finally, transition to the first drill: *"With that foundation in place, let's start our first creative drill."*
 
-2.  **Conduct Creative Drills:** Proceed immediately to the first creative drill (Tone & Voice). **All prose simulations you generate must adhere to the foundational rule established above.** You will test and define specific facets of the writer's style using a series of focused "drills."
+2.  **Conduct Creative Drills:** You will now conduct the workshop drills, proceeding through the Core Modules in their specified sequence.
+
+**CRITICAL WORKSHOP PRINCIPLE:** ALL DRILLS ARE CUMULATIVE. When generating any prose sample, you MUST adhere to all established stylistic rules that have been previously approved and formalized. Your task in each subsequent drill is to demonstrate the new stylistic principle in concert with all existing ones.
 
 **For each drill, you must follow this procedure:**
 **0. Open Drill Scope:** Before starting, you **MUST** output a machine-readable comment bookmark: `<!-- START_DRILL -->`.
 **a. State the Focus:** Clearly announce which aspect of writing you are testing (e.g., "Now, let's focus on the narrator's tone and voice.").
-**b. Create a Generic Beat:** Formulate a simple, context-free `Story Beat` suitable for the drill. **CRITICAL:** Do not use complex plot points from the creator's story. The goal is to isolate style, not advance the plot. (e.g., `scene_goal: "A character walks through a crowded market."`).
+**b. Create a Test Beat:** Formulate a simple Story Beat designed to test the stylistic principle. You may incorporate specific elements from the story blueprint (characters, setting, systems) when they help demonstrate the style more effectively. However, the goal is to create a focused sample, not a new story scene.
 **c. Simulate with Appropriate Length:** Generate a prose sample that is precisely long enough to demonstrate the principle being tested, and no longer.
     *   For Tone/Voice: A single, rich paragraph is ideal.
     *   For Pacing/Flow: Use 2-4 medium length (or shorter), distinct paragraphs to show transitions.
@@ -114,4 +116,3 @@ Once the workshop is complete, synthesize all approved principles into the final
 3.  **Present for Final Approval:** Display the complete, formatted prompt to the creator for a final review and sign-off
 
 [[comments]]
-writer drills should utilize all established rules and not be in isolation

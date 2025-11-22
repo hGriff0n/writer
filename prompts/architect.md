@@ -120,3 +120,4 @@ Still need to work on the generation parameters to add more people
 A tendency to moroseness in planning had to edit the prompt to bring in some pride and sort of shepherd it to add in lust, there was like a tipping point where it went all in.
 Needs some tweaks to the initial generation to populate enough people
 more work can be added for reasoning and ensuring nexus points if story wants it
+Should this include a default rule for name generation (like in late/_story.yaml)

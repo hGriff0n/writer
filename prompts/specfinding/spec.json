@@ -53,15 +53,9 @@
                     "start_datetime",
                     "time_since_previous",
                     "state_change_summary"
-                ],
-                "propertyOrdering": [
-                    "title",
-                    "beat_summary",
-                    "start_datetime",
-                    "time_since_previous",
-                    "state_change_summary"
                 ]
-            }
+            },
+            "maxItems": 15
         },
         "world_state_delta_json": {
             "type": "string",
@@ -101,12 +95,9 @@
                         "required": [
                             "event_description",
                             "word_budget"
-                        ],
-                        "propertyOrdering": [
-                            "event_description",
-                            "word_budget"
                         ]
-                    }
+                    },
+                    "maxItems": 10
                 },
                 "ending_instruction": {
                     "type": "string"
@@ -120,27 +111,9 @@
                 "estimated_duration",
                 "key_events",
                 "ending_instruction"
-            ],
-            "propertyOrdering": [
-                "goal",
-                "location",
-                "atmosphere",
-                "start_datetime",
-                "estimated_duration",
-                "key_events",
-                "ending_instruction"
             ]
         }
     },
-    "propertyOrdering": [
-        "full_world_state_json",
-        "beats_or_options",
-        "world_state_delta_json",
-        "scene_plan",
-        "conductor_thought_process",
-        "response_mode",
-        "output_data"
-    ],
     "required": [
         "response_mode"
     ]

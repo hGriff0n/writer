@@ -22,7 +22,7 @@
         },
         "plan_or_options": {
             "type": "array",
-            "description": "Either or chronological sequence of plot events (iff response_mode is 'plot_plan') or a collection of possible next steps (iff response_mode is 'ask_for_options').",
+            "description": "Either a chronological sequence of plot events (iff response_mode is 'plot_plan') or a collection of possible next steps (iff response_mode is 'ask_for_options').",
             "items": {
                 "type": "object",
                 "properties": {

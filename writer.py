@@ -63,7 +63,7 @@ arch_prompt = p.format(
 #     max_bucket_size=5,
 # )
 
-spec = config.load_schema('specfinding/spec')
+spec = config.load_schema('spec')
 architect = LlmEngine(
     config,
     args.profile,
@@ -97,15 +97,18 @@ class Context(object):
     messages: List[AnyMessage] = []
     tokens: int = 0
 
+class ArchitectContext(Context):
+    previous_events: List[Dict] = []
+    world_state = {}
 
-architect_context = Context()
+class WriterContext(Context):
+    previous_scenes: List[str] = []
+
+architect_context = ArchitectContext()
 architect_context.messages = [SystemMessage(content=architect.prompt)]
 
-write_context = Context()
+write_context = WriterContext()
 write_context.messages = [SystemMessage(content=writer.prompt)]
-
-# TODO: me - integrate better world state tracking
-global_world_state = {}
 
 
 #
@@ -131,7 +134,7 @@ def request_new_plan():
     PLOT_PLAN = plan['plan_or_options']
 
 
-def get_next_input_from_plan():
+def get_next_input_from_plan() -> Dict:
     global PLOT_PLAN
     if not PLOT_PLAN:
         request_new_plan()
@@ -153,6 +156,8 @@ def ask_for_ideas(context: Context) -> Tuple[List[str], List[str]]:
 def save_file_path(config, story) -> str:
     return f'./{config.directories.story}/{story.title}/resume.json'
 
+
+# TODO: me - this might need context compaction
 # Allow for resuming an in-progress story
 if args.resume:
     print("Loading in-progress story...")
@@ -166,7 +171,7 @@ if args.resume:
     architect_context.messages.extend(
         AIMessage([msg]) for msg in state['plan']
     )
-    global_world_state = state.get('state', {})
+    architect_context.world_state = state.get('state', {})
 
     print(f"Restoring current plan...")
     print(architect_context.messages[-1])
@@ -176,15 +181,16 @@ if args.resume:
     if len(write_context.messages) > 1:
         print(write_context.messages[-1].content)
     else:
-        print(global_world_state)
+        print(architect_context.world_state)
 
 # Otherwise we're starting a new story, so simply load up the default
 # start command and start writing automatically.
+# TODO: me - This can sometimes crash based on how well gemini does structure
 else:
     print("Starting first turn")
     ws = send_message(architect, story.first_turn, architect_context)
-    global_world_state = json.loads(ws['full_world_state_json'])
-    print(f"Initial World State: {json.dumps(global_world_state, indent=4)}")
+    architect_context.world_state = json.loads(ws['full_world_state_json'])
+    print(f"Initial World State: {json.dumps(architect_context.world_state, indent=4)}")
 
 
 # TODO: me - This is the closest thing I have to the approach I want
@@ -275,9 +281,10 @@ else:
             prompt = send_message(
                 architect, f'plan 1 beat {prompt}', architect_context)
         else:
-            prompt = json.dumps(get_next_input_from_plan())
+            prompt = get_next_input_from_plan()
 
         print(prompt)
+        architect_context.previous_events.append(prompt)
         scene = send_message(architect, prompt, architect_context)['scene_plan']
         context_start = len(write_context.messages)
         print('Got scene plan. Generating...')
@@ -295,7 +302,7 @@ else:
         
         # Merge the updated world state into the global state
         dws = json.loads(scene['world_state_delta_json'])
-        global_world_state = always_merger.merge(global_world_state, dws)
+        architect_context.world_state = always_merger.merge(architect_context.world_state, dws)
 
         # Reset the context to "pretend" we didn't need to split the scene
         write_context.messages = write_context.messages[:context_start]
@@ -303,7 +310,8 @@ else:
 
         # And also pretend the "full" response was sent at once
         response = '\n'.join(response)
-        write_context.messages.append(AIMessage(content='\n'.join(response)))
+        write_context.previous_scenes.append(response)
+        write_context.messages.append(AIMessage(content=response))
         print(response)
 
 
@@ -314,20 +322,13 @@ chat_file = writer.chat_log.save(config.output_dir)
 arch_file = architect.chat_log.save(config.output_dir)
 
 
-# TODO: me - What does this do that's not already in the chat log?
-# Aside from saving in the same location as the story files ???
 # Save the current state of generation in a temp file in the story directory
 # This is to enable continuations through the --resume flag
-# TODO: me - This should be done based on the context tracking, but that has it's own issues currently
-# Unfortunately, we have to accept this until we change context tracking
-book = [response for response in writer.chat_log.having_role('AI')]
-plan = [response for response in architect.chat_log.having_role('AI')]
 savefile = {
-    'prose': book,
-    'plan': plan,
-    # Number of planned plot points remaining before requesting a new plan
-    'plan_counter': len(PLOT_PLAN),
-    'state': global_world_state,
+    'prose': write_context.previous_scenes,
+    'plan': PLOT_PLAN,
+    'previous': architect_context.previous_events,
+    'state': architect_context.world_state,
     'files': {
         'writer_file': chat_file,
         'architect_file': arch_file

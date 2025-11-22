@@ -19,14 +19,14 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 -- Clean up everything
 
 - gemini 3 pretty decent coherence, gen whole story
-  - overly sad and morose
+  - overly sad and morose (should i add a bias towards enjoyment?)
   - didn't gen enough characters
     - include questions about population principles
   - have to explicitly say "stop at moment" to prevent full gen
     - how to decide when to split
   - time seems to be a bit fluid
 
-# [SECOND] Migrate All Stories to New Approach
+# [PRIMARY] Migrate All Stories to New Approach
 - Document Development Pipeline
 _premise >ingest+orchestrator> designdoc >scenegen> generation >writerstyle> author
                            ---------------------------+-->analyzer> components
@@ -57,14 +57,28 @@ _premise >ingest+orchestrator> designdoc >scenegen> generation >writerstyle> aut
   - [ ] author
 - `late`
   - [ ] probably worth refreshing author
+  - [ ] fix bloom deck and time scale
 - maybe one of the other story ideas
 
+# [SECONDARY] Agentic Explorations
+- Convert architect+writer into langchain agents (run tag-team to make the prose)
+  - The architect plans long-form plot beats and action
+  - The writer then takes those plot beats and develops scenes showing them
+- Experiment with agentic discussion boards/parliaments for long-term plot extrapolation
+  - No i have to create my own agent discussion board
+
+# [TERTIARY] Experiment with other models?
+- Chat GPT 5.1 has good reviews
+- Kimi K2
+- Claude Sonnet
+
 # Script Improvements
+- Change to pydata structure (gemini support actually week)
+- Integrate ContextManager for orchestrator
+  - Migrate internals to langchain message aware
 - Validate json schema against updated IR
   - Investigate reporting IR conversations in json, not pseudo-xml
 - Is there anyway to track the constants/config files?
-- Integrate ContextManager for orchestrator
-  - Migrate internals to langchain message aware
 
 # Skills and Agents
 - Implement agentic layer to dynamically load skill files
@@ -72,12 +86,7 @@ _premise >ingest+orchestrator> designdoc >scenegen> generation >writerstyle> aut
     - I don't think the current logic has enough to do that
   - https://leehanchung.github.io/blogs/2025/10/26/claude-skills-deep-dive/
 - Investigate adding AI critique agents
-- Investigate using sub-agents for deep-dives dueing specfinding
-- Convert architect+writer into langchain agents (run tag-team to make the prose)
-  - The architect plans long-form plot beats and action
-  - The writer then takes those plot beats and develops scenes showing them
-- Experiment with agentic discussion boards/parliaments for long-term plot extrapolation
-  - No i have to create my own agent discussion board
+- Investigate using sub-agents for deep-dives during specfinding
 - Investigate making a "plot critique" agent that could parse the output of the ai studio tests and present ways of adjusting the pacing
   - If I'm using a lot of time jumps, then it's probably a sign the steps are too small
   - Would also have to include specific comments about what I didn't like since I don't have any tools to indicate that directly in the conversation

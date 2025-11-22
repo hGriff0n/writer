@@ -31,58 +31,48 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
     - how to decide when to split
   - time seems to be a bit fluid
 
-# [PRIME] Rewrite Specfinding From First Principles=
-- Validate that writer.py works
-  - scene generation
-  - option selection
-  - saving
-  - resuming
-- Apply world state updates to world state
-  - maybe change prompt to report as deltas
-- Integrate ContextManager for orchestrator
-  - Migrate internals to langchain message aware
+# [PRIME] Rewrite Specfinding From First Principles
 - Go through all code/prompt and clean up/organize
-  - Incorporate names thing in writer.py initialization to prompt?
+
+_premise >ingest+orchestrator> designdoc >scenegen> generation >writerstyle> author
+                           ---------------------------+-->analyzer> components
 
 # [SECOND] Migrate All Stories to New Approach
-- `late`
-  - [ ] minor author update
 - `curse`
-  - [x] _premise
-  - [ ] designdoc
+  - [~] designdoc
+  - [ ] components
   - [ ] generation
   - [ ] author
-  - [ ] components
 - `reality`
-  - [x] _premise
-  - [ ] designdoc
+  - [~] designdoc
   - [ ] generation
-  - [ ] author
   - [ ] components
-- **`mara`**
-  - [ ] _premise
-  - [ ] designdoc
-  - [ ] generation
   - [ ] author
-  - [ ] components
 - **`thousand`**
-  - [ ] _premise
-  - [ ] designdoc
+  - [~] designdoc
   - [ ] generation
-  - [ ] author
   - [ ] components
+  - [ ] author
+- **`mara`**
+  - [~] designdoc
+  - [ ] generation
+  - [ ] components
+  - [ ] author
 - `level`
-  - [ ] _premise
-  - [ ] designdoc
+  - [~] designdoc
   - [ ] generation
-  - [ ] author
   - [ ] components
+  - [ ] author
+- `late`
+  - [ ] probably worth refreshing author
 - maybe one of the other story ideas
 
 # Script Improvements
 - Validate json schema against updated IR
   - Investigate reporting IR conversations in json, not pseudo-xml
 - Is there anyway to track the constants/config files?
+- Integrate ContextManager for orchestrator
+  - Migrate internals to langchain message aware
 
 # Skills and Agents
 - Implement agentic layer to dynamically load skill files

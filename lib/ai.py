@@ -138,7 +138,7 @@ class LlmEngine:
     # Profiles actually
     @staticmethod
     def supported_models():
-        return ['gemini', 'openai', 'gemini-flash']
+        return ['gemini', 'openai', 'gemini-flash', 'gemini3']
 
     DEFAULT_MODEL = 'gemini'
 
@@ -157,7 +157,7 @@ class LlmEngine:
 
         # Setup the rest of the engine.
         self._llm = init_model(self._model_config)
-        self._prompt = prompt if prompt else config.load_prompt_file(prompt_file)
+        self._prompt = prompt if prompt is not None else config.load_prompt_file(prompt_file)
         self._log = ChatLog(template=self._prompt, conversation=[])
         self._usage = UsageTracker(self._model_name, config.constants)
 
@@ -192,8 +192,11 @@ class LlmEngine:
     def usage_stats(self) -> UsageTracker:
         return self._usage
 
-    def invoke(self, message: str, context: List[AnyMessage], *args, **kwargs) -> Tuple[str | Dict, Dict]:
-        context.append(HumanMessage(content=message))
+    def invoke(self, message: str | Dict, context: List[AnyMessage], *args, **kwargs) -> Tuple[str | Dict, Dict]:
+        if isinstance(message, dict):
+            context.append(HumanMessage([message]))
+        else:
+            context.append(HumanMessage(content=message))
         response = self._llm.invoke(input=context, *args, **kwargs)
 
         if not self._structured:

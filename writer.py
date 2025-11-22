@@ -2,6 +2,7 @@
 from argparse import ArgumentParser
 import json
 from typing import Dict, List, Tuple
+from deepmerge import always_merger
 
 from lib.ai import LlmEngine
 from lib.config import load_config, DataConstants
@@ -110,7 +111,7 @@ global_world_state = {}
 #
 # Wrapper for sending a message to the llm
 #
-def send_message(llm: LlmEngine, message: str, context: Context) -> str | Dict:
+def send_message(llm: LlmEngine, message: str | Dict, context: Context) -> str | Dict:
     if context.messages is None:
         raise Exception("Context must be specified")
 
@@ -125,7 +126,7 @@ REQUEST_PLAN = f"""plan 7 beats"""
 PLOT_PLAN = []
 def request_new_plan():
     global PLOT_PLAN
-    plan = send_message(architect, REQUEST_PLAN, write_context)
+    plan = send_message(architect, REQUEST_PLAN, architect_context)
     print(plan.keys())
     PLOT_PLAN = plan['plan_or_options']
 
@@ -156,23 +157,26 @@ def save_file_path(config, story) -> str:
 if args.resume:
     print("Loading in-progress story...")
     with open(save_file_path(config, story), 'r', encoding='utf-8') as f:
-        story = json.load(f)
+        state = json.load(f)
 
     print("Restoring prior context...")
     write_context.messages.extend(
-        AIMessage(content=msg) for msg in story['prose']
+        AIMessage([msg]) for msg in state['prose']
     )
     architect_context.messages.extend(
-        AIMessage(content=msg) for msg in story['plan']
+        AIMessage([msg]) for msg in state['plan']
     )
-    global_world_state = story.get('state', {})
+    global_world_state = state.get('state', {})
 
-    # TODO: me - I believe this needs to handle 'parsed'??
     print(f"Restoring current plan...")
-    PLOT_PLAN = architect_context.messages[-1].content['plan_or_options'][-story['plan_counter']:]
+    print(architect_context.messages[-1])
+    PLOT_PLAN = architect_context.messages[-1].content[0]['plan_or_options'][-state['plan_counter']:]
 
     print(f"Loaded previous story...")
-    print(write_context[-1].content)
+    if len(write_context.messages) > 1:
+        print(write_context.messages[-1].content)
+    else:
+        print(global_world_state)
 
 # Otherwise we're starting a new story, so simply load up the default
 # start command and start writing automatically.
@@ -217,7 +221,7 @@ if args.runs > 0:
 #
 # At the moment, there are two "commands":
 #   - /context: print prior chapter
-#   - exit, /finish: stop the loop
+#   - /exit: stop the loop
 #   - /help: request ai help for generating next actions
 #
 # All other input is sent directly to the model as the 'Plot Direction'
@@ -225,60 +229,79 @@ if args.runs > 0:
 else:
     def report_tokens():
         return f'A:{architect_context.tokens}|W:{write_context.tokens}>'
+    
+    # Reject any unpursued plot plans from the context because they are now invalidated
+    # TODO: me - probably a sign I should be tracking this someway else
+    def unroll_plan_memory():
+        num_rem = len(PLOT_PLAN)
+        num_planned = len(architect_context.messages[-1].content[0]['plan_or_options'])
+        if num_rem == num_planned:
+            architect_context.messages.pop()
+        elif num_rem > 0:
+            del architect_context.messages[-1].content['plan_or_options'][-num_rem:]
+        PLOT_PLAN.clear()
+
+    def print_options(display: List[str], options):
+        print(f'A: {display[0]}')
+        print(f'B: {display[1]}')
+        print(f'C: {display[2]}')
 
     while True:
         prompt = input(report_tokens()).strip()
-        if prompt == "exit" or prompt == "/finish":
+        if prompt == "/exit":
             break
         if prompt.lower() == "/context":
             print(write_context[-1].messages.content)
             continue
-        if prompt.lower() == "/help":
-            PLOT_PLAN.clear()
-            display, options = ask_for_ideas(architect_context)
-            print(f'A: {display[0]}')
-            print(f'B: {display[1]}')
-            print(f'C: {display[2]}')
-            choice = input("Select Option (A/B/C)>").lower()
-            prompt = {'a': options[0], 'b': options[1],
-                      'c': options[2]}[choice]
-            # Remove the request for an option and the ai response
-            # And replace it with the selected option to keep the context accurate
-            del architect_context.messages[-2:]
-            architect_context.messages.append(AIMessage(content=prompt))
         if prompt.lower() == "/plan":
             if not PLOT_PLAN:
                 request_new_plan()
             print('- ' + '\n- '.join(summarize_plot_beats(PLOT_PLAN)))
             continue
+        if prompt.lower() == "/help":
+            unroll_plan_memory()
+            display, options = ask_for_ideas(architect_context)
+            print_options(display, options)
+            choice = input("Select Option (A/B/C)>").lower()
+            prompt = {'a': options[0], 'b': options[1],
+                      'c': options[2]}[choice]
 
-        # Allow for automated planning of plot events
-        if not prompt:
-            prompt = get_next_input_from_plan()
-        else:
-            num_rem = len(PLOT_PLAN)
-            # Reject any unpursued plot plans from the context because they are now invalidated
-            # TODO: me - probably a sign I should be tracking this someway else
-            if num_rem > 0:
-                del architect_context.messages[-1].content['parsed']['plan_or_options'][-num_rem:]
-            PLOT_PLAN.clear()
+            # Remove the request for an option and the ai response
+            # And replace it with the selected option to keep the context accurate
+            del architect_context.messages[-2:]
+            architect_context.messages.append(AIMessage([prompt]))
+        elif prompt:
+            unroll_plan_memory()
             prompt = send_message(
                 architect, f'plan 1 beat {prompt}', architect_context)
+        else:
+            prompt = json.dumps(get_next_input_from_plan())
 
-        # TODO: me - Need to update world state
+        print(prompt)
         scene = send_message(architect, prompt, architect_context)['scene_plan']
-
         context_start = len(write_context.messages)
+        print('Got scene plan. Generating...')
+
         response = []
         # TODO: me - Technically, should aim for splitting by 500/600 words
-        for event in scene['key_events']:
-            word_budget = event.get('word_target', 150) * 2
+        s = json.dumps(scene)
+        num_splits = len(scene['key_events'])
+        for i, event in enumerate(scene['key_events']):
+            print(f'Generating for scene event {i} out of {num_splits}...')
+            word_budget = event.get('word_target', 100) * 2
             response.append(
-                send_message(writer, f'{scene}\nStop after {event['event_description']} {word_budget} words', write_context)
+                send_message(writer, f'{s}\nStop after {event['event_description']} {word_budget} words', write_context)
             )
-        write_context.messages = write_context.messages[:context_start]
-        write_context.messages.append(HumanMessage(content=scene))
+        
+        # Merge the updated world state into the global state
+        dws = json.loads(scene['world_state_delta_json'])
+        global_world_state = always_merger.merge(global_world_state, dws)
 
+        # Reset the context to "pretend" we didn't need to split the scene
+        write_context.messages = write_context.messages[:context_start]
+        write_context.messages.append(HumanMessage([scene]))
+
+        # And also pretend the "full" response was sent at once
         response = '\n'.join(response)
         write_context.messages.append(AIMessage(content='\n'.join(response)))
         print(response)
@@ -296,6 +319,7 @@ arch_file = architect.chat_log.save(config.output_dir)
 # Save the current state of generation in a temp file in the story directory
 # This is to enable continuations through the --resume flag
 # TODO: me - This should be done based on the context tracking, but that has it's own issues currently
+# Unfortunately, we have to accept this until we change context tracking
 book = [response for response in writer.chat_log.having_role('AI')]
 plan = [response for response in architect.chat_log.having_role('AI')]
 savefile = {

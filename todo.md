@@ -1,22 +1,16 @@
 
 https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
-- Investigate upgrading to paid tier (OR https://vast.ai/): paid
 
 # Tracks
 - Specfinding Agents
-- Improving Specfinding Search
 - Longform Storydesign
 - Interactive Storydesign
 - Enforcing world fidelity and other rules
 - RAG/Skills agent
-- Create Specsheets for all narratives
 
-- https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
 # [EXTERNAL] Markdown2pdf
 - Integrate with Obsidian to simplify export even more
 - Create AI script for running prompt
-
--- Clean up everything
 
 - gemini 3 pretty decent coherence, gen whole story
   - overly sad and morose (should i add a bias towards enjoyment?)
@@ -27,9 +21,6 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
   - time seems to be a bit fluid
 
 # [PRIMARY] Migrate All Stories to New Approach
-- Document Development Pipeline
-_premise >ingest+orchestrator> designdoc >scenegen> generation >writerstyle> author
-                           ---------------------------+-->analyzer> components
 - `curse`
   - [~] designdoc
   - [ ] components
@@ -57,7 +48,9 @@ _premise >ingest+orchestrator> designdoc >scenegen> generation >writerstyle> aut
   - [ ] author
 - `late`
   - [ ] probably worth refreshing author
-  - [ ] fix bloom deck and time scale
+  - [ ] add rotating cast
+  - [~] fix bloom deck and time scale
+  - [ ] allow protagonist to "demonstrate" abilities long term (like football team)
 - maybe one of the other story ideas
 
 # [SECONDARY] Agentic Explorations
@@ -68,6 +61,10 @@ _premise >ingest+orchestrator> designdoc >scenegen> generation >writerstyle> aut
   - No i have to create my own agent discussion board
 
 # [TERTIARY] Experiment with other models?
+- Update LlmEngine to auto-create rate limiters
+  - Update configs to new tier 1
+  - Update configs to Gemini
+  - Add configs for ChatGPT, etc.
 - Chat GPT 5.1 has good reviews
 - Kimi K2
 - Claude Sonnet
@@ -76,49 +73,59 @@ _premise >ingest+orchestrator> designdoc >scenegen> generation >writerstyle> aut
 - Change to pydata structure (gemini support actually week)
 - Integrate ContextManager for orchestrator
   - Migrate internals to langchain message aware
+  - https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
 - Validate json schema against updated IR
   - Investigate reporting IR conversations in json, not pseudo-xml
 - Is there anyway to track the constants/config files?
 
-# Skills and Agents
+# Integrate Skill Framework to Reduce Context Size (esp in Specfinding)
 - Implement agentic layer to dynamically load skill files
   - Work on the detection mechanisms for determining a load is needed
     - I don't think the current logic has enough to do that
   - https://leehanchung.github.io/blogs/2025/10/26/claude-skills-deep-dive/
-- Investigate adding AI critique agents
-- Investigate using sub-agents for deep-dives during specfinding
-- Investigate making a "plot critique" agent that could parse the output of the ai studio tests and present ways of adjusting the pacing
-  - If I'm using a lot of time jumps, then it's probably a sign the steps are too small
-  - Would also have to include specific comments about what I didn't like since I don't have any tools to indicate that directly in the conversation
-- Would be a good idea to make an agent specifically for understanding this process and all of it's interactions (could be good for adding new features)
-- Develop reviewer prompt into a very detailed analaysis and editor agent
+
+# Other Agentic Explorations
+- Implementing skill checks for `level`
+- Initialization Agents
+  - Specialized agents for running story initialization logic, esp characters
+    - `late` has difficulties generating appropriate numbers
+- Research Agent
+  - Specialized agent to collect and structure information for story building
+  - `curse` which requires explicit factual information
+  - `thousand` which is using the facts as a generative base
+  - `mara` which involves media canon
+  - Incorporating research into world building: https://aistudio.google.com/app/prompts/15p_SWfuw-dzpym6oaOb69b9IUIcnY4wX
+- Critique/Review agents
+  - Specialized agents to critique the produced prose from adherence/pacing/emotion/etc
+  - Theoretically, this would feedback to produce better output
+  - Not sure how to detect issues from nuanced misunderstandings though
   - Implement into a Reflection agent
     - https://medium.com/aimonks/reflection-agents-with-langgraph-agentic-llm-based-applications-87e43c27adc7
-- Implement an iterative agent with critique
-  - Plan and Execute (an adaptation on the architect pattern)
-- Develop a very basic prompt to test out tool calling
-  - Using skills checks in agent.py
-- Implement Basic RAG agent w/ vector store and World DB
+- RAG/World Lore agent
+  - Add an agent to inject complete world state as needed to optimize context
+  - Sort of similar issue with skills, how to identify and structure need finding
+- Investigate using sub-agents for deep-dives during specfinding
+- Would be a good idea to make an agent specifically for understanding this process and all of it's interactions (could be good for adding new features)
 
-# Another Look at Long Term Planning
-- Update LlmEngine to auto-create rate limiters
-  - Update configs to new tier 1
-- Investigate new writers that can provide more detailed long-form scenes
+# Improving Long Term Planning and Plot Development
 - Investigate other ways of exploring plot/story ideas
-- Investigate recasting plot planning to use parliament model
+  - "Long terme what are the for aspects of the story and ask where would they be at this point simulate a couple options choosing various degrees of progression and then critique how those work out with the other goals. Can you integrate them with other intended narratives"
 - Use repeated iteration to build longer novel-form scenes
   - https://aistudio.google.com/app/prompts/179Q4SpXMnAfGWaw_M8E_HiqobQcFIQ8g
 - Identify the place of ending and the duration
   - https://aistudio.google.com/app/prompts/18QQT7o5XLqF_ZXpKnRp61ipzNSagsHYQ
   - Solution would seem to require multiple agents
-- https://arxiv.org/html/2503.04844v1
-- https://github.com/narrative-first/narrative-context-protocol
-- https://subtxt.app/
-- https://dramatica.com/
-
-# Building on the general principles
 - Incorporating allegory/commentary: https://aistudio.google.com/app/prompts/1xF53-8YVysnFdbZ88Q_1ueBlm5kyFt8p
-- Incorporating research into world building: https://aistudio.google.com/app/prompts/15p_SWfuw-dzpym6oaOb69b9IUIcnY4wX
+- Research Papers
+  - https://arxiv.org/html/2503.04844v1
+  - https://github.com/narrative-first/narrative-context-protocol
+  - https://subtxt.app/
+  - https://dramatica.com/
+
+# Improving Writer Creativity and Prose
+- Investigate new writers that can provide more detailed long-form scenes
+
+# General Research Into Story Telling Principles
 - Research phases for identifying potential themes, plots, etc.?
   - Also useful for naming/etal
 - Doing multiple things with one action
@@ -141,7 +148,7 @@ _premise >ingest+orchestrator> designdoc >scenegen> generation >writerstyle> aut
     - https://aistudio.google.com/app/prompts/1tUzWztSyO2tq3neM4GOKfEBNvWgvvUtP
   - Investigate compaction layers for merging/reducing prompt bloat
 
-# !!! Clean up the Presentation in CLI !!!
+# Migrating Chat Interface to ui/*
 - I was thinking about the story bible though that's only in ai studio
 - Rewrite LlmEngine in terms of `create_agent`??
   - Allows for dynamic model selection if needed

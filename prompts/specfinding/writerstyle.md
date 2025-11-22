@@ -116,3 +116,4 @@ Once the workshop is complete, synthesize all approved principles into the final
 3.  **Present for Final Approval:** Display the complete, formatted prompt to the creator for a final review and sign-off
 
 [[comments]]
+could we maybe get further by taking examples from various authors??

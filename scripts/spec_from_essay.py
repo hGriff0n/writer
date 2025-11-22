@@ -1,3 +1,5 @@
+import sys  # Allow this file to import like it was in the "main" folder
+sys.path.append(r'C:\Users\ghoop\Desktop\writer')
 
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain_core.rate_limiters import InMemoryRateLimiter

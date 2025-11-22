@@ -5,7 +5,7 @@ sys.path.append(r'C:\Users\ghoop\Desktop\writer')
 import json
 
 from lib.ai import LlmEngine
-from lib.config2 import Config
+from lib.config import Config
 
 from langchain_core.messages import AnyMessage, SystemMessage, HumanMessage
 

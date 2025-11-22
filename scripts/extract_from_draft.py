@@ -7,8 +7,7 @@ from argparse import ArgumentParser
 import regex as re
 
 from lib.ai import LlmEngine
-from lib.config import load_config, DataConstants, load_markdown
-from lib.config2 import Config
+from lib.config import Config
 from langchain_core.prompts import PromptTemplate
 
 

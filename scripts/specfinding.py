@@ -10,7 +10,7 @@ import regex as re
 from io import StringIO
 
 from lib.ai import LlmEngine
-from lib.config2 import Config
+from lib.config import Config
 from lib.context import ContextManager
 from lib.util import load_markdown
 

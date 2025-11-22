@@ -6,7 +6,7 @@ import json
 import os
 
 from lib.ai import ChatLog
-from lib.config2 import Config
+from lib.config import Config
 from lib.util import extract_between_tags
 
 

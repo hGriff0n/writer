@@ -6,7 +6,7 @@ from deepmerge import always_merger
 import pathlib
 
 from lib.ai import LlmEngine
-from lib.config2 import Config
+from lib.config import Config
 
 from langchain_core.messages import AnyMessage, AIMessage, SystemMessage, HumanMessage
 from langchain_core.prompts import PromptTemplate

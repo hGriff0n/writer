@@ -1,228 +1,127 @@
-
-from dataclasses import dataclass
+from enum import Enum
+import pathlib
+from pydantic import BaseModel, Field
 from typing import Dict, List, Optional
-from pathlib import Path
-import yaml
+from pydantic_yaml import parse_yaml_file_as
 import json
+import os
 
-# TODO: me - these would be a dataclass if I didn't use '-' in yaml
-# TODO: me - Rewrite with dataclasses and one of these libraries
-# https://catt.rs/en/stable/
-# https://github.com/Fatal1ty/mashumaro?tab=readme-ov-file#usage-example
+from .util import load_markdown
 
-def _strip_comments(data: str) -> str:
-    idx = data.find('[[comments]]')
-    return (data[:idx].strip() if idx != -1 else data)
 
-def _load_yaml(file):
-    try:
-        with open(file, 'r', encoding='utf-8') as f:
-            return yaml.safe_load(f)
-    except Exception as e:
-        print(f'[ERROR]: {e}')
-        return {}
+class ApiProvider(str, Enum):
+    google = 'google_genai'
+    openai = 'openai'
+    anthropic = 'anthropic'
+    moonshot = 'moonshot'  # Not sure what Kimiv2 connection is
+    local = 'local'
+
+class ApiCosts(BaseModel):
+    input: float
+    output: float
+
+class ModelConfig(BaseModel):
+    temperature: float
+
+class RateLimits(BaseModel):
+    rpm: int
+
+class ApiIntegration(BaseModel):
+    name: str
+    api_key: str = Field(alias='api-key')
+    provider: ApiProvider
+    costs: dict[str, ApiCosts]
+    default_config: Optional[ModelConfig] = Field(alias='default-config', default=None)
+    local_model: bool = Field(default=False)
+    rate_limits: Optional[RateLimits] = Field(alias='rate-limits', default=None)
+
+class Constants(BaseModel):
+    supported_ais: List[ApiIntegration] = Field(alias='supported-ais')
+    api_keys: dict[str, str] = Field(alias='api-keys')
+
+    @staticmethod
+    def load(path: pathlib.Path) -> Constants:
+        return parse_yaml_file_as(Constants, path)
     
-def load_markdown(file):
-    try:
-        with open(file, 'r', encoding='utf-8') as f:
-            return _strip_comments(f.read())
-    except Exception as e:
-        print(f'[ERROR]: {e}')
-        return ''
-
-# For system/program constants that are not mutable
-# Theoretically, this could be eventually used to support multiple different
-# llms with specific configurations, while allowing for profiles to reduce
-# the cost of remembering the options
-class DataConstants:
-    FILE_LOCATION = './data/constants.yaml'
-
-    def __init__(self):
-        self._data = _load_yaml(self.FILE_LOCATION)
-        self._supported_names = [m['name']
-                                 for m in self._data['supported-ais']]
-
-    @property
-    def aspects_dir(self) -> str:
-        return self._data.get('aspects-dir', '')
-
-    @property
-    def supported_ais(self) -> List[str]:
-        return self._supported_names
-
-    def get_config_for_model(self, model: str) -> Optional[Dict[str, any]]:
+    def get_config_for_model(self, model_name: str) -> ApiIntegration | None:
         return next((
-            a for a in self._data['supported-ais'] if a['name'] == model
+            a for a in self.supported_ais if a.name == model_name
         ), None)
 
 
-@dataclass
-class Directories:
+class ApiProfile(BaseModel):
+    model_name: str
+    provider: ApiProvider
+    url: Optional[str] = Field(default=None)
+
+class DirectoryMap(BaseModel):
     prompts: str
     output: str
     story: str
 
+class Profiles(BaseModel):
+    ai_profiles: dict[str, ApiProfile] = Field(alias='ai-profiles')
+    directories: DirectoryMap
 
-# Extremely basic story file
-# TODO: Adjust when I change the aspects to be separated
-class StoryFile:
-
-    def __init__(self, story: str, path: Path, yaml):
-        self._story = story
-        self._path = path
-        self._yaml = yaml
-        self._story_arch = None
-        self._principles = None
-        self._writer = None
-        self._lore = None
-        self._plot = None
-        self._generation = None
-        self._concepts = None
-        self._engines = None
-        self._rules = None
-        self._schemas = None
-        self._fullspec = None
-
-    def _load(self, file):
-        return load_markdown(f'{self._path}/{file}.md') if file else ''
+    @staticmethod
+    def load(path: pathlib.Path) -> Profiles:
+        return parse_yaml_file_as(Profiles, path)
     
-    def _load_all(self, files):
-        return '\n'.join(self._load(f) for f in files)
+
+class StoryDef(BaseModel):
+    principles: str
+    story_arch: Optional[str] = Field(default=None)
+    fullspec: str
+    writer: str
+    first_turn: str
+    path: Optional[pathlib.Path] = Field(default=None)
+
+    @staticmethod
+    def load(path: pathlib.Path, story: str) -> StoryDef:
+        s = parse_yaml_file_as(StoryDef, path / story / '_story.yaml')
+        s.path = path
+        return s
     
-    @property
-    def title(self) -> str:
-        return self._story
+    def load_file(self, file: str):
+        return load_markdown(self.path / f'{file}.md')
 
-    @property
-    def principles(self) -> str:
-        if not self._principles:
-            self._principles = self._load(self._yaml['principles'])
-        return self._principles
-
-    @property
-    def narrative_intent(self) -> str:
-        return self._yaml['narrative_intent']
-
-    @property
-    def story_arch(self) -> str:
-        if not self._story_arch:
-            self._story_arch = self._load(self._yaml['story_arch'])
-        return self._story_arch
-
-    @property
-    def writer(self) -> str:
-        if not self._writer:
-            self._writer = self._load(self._yaml['writer'])
-        return self._writer
-
-    @property
-    def first_turn(self) -> str:
-        return self._yaml['first_turn']
-    
-    # Potentially removed
-    @property
-    def fullspec(self) -> str:
-        if not self._fullspec:
-            self._fullspec = self._load(self._yaml.get('fullspec'))
-        return self._fullspec
-
-    @property
-    def lore(self) -> str:
-        if not self._lore:
-            self._lore = self._load(self._yaml['lore'])
-        return self._lore
-
-    @property
-    def generation(self) -> str:
-        if not self._generation:
-            self._generation = self._load(self._yaml['generation'])
-        return self._generation
-
-    @property
-    def core_concepts(self) -> str:
-        if not self._concepts:
-            self._concepts = self._load_all(self._yaml['core_concepts'])
-        return self._concepts
-
-    @property
-    def engines(self) -> str:
-        if not self._engines:
-            self._engines = self._load_all(self._yaml['engines'])
-        return self._engines
-
-    @property
-    def rules(self) -> str:
-        if not self._rules:
-            self._rules = self._load_all(self._yaml['rules'])
-        return self._rules
-
-    @property
-    def schemas(self) -> str:
-        if not self._schemas:
-            self._schemas = self._load_all(self._yaml['schemas'])
-        return self._schemas
-
-    @property
-    def architect(self) -> str:
-        if not self._plot:
-            self._plot = self._load(self._yaml['plot'])
-        return self._plot
-
-
-# For user-specific configurations (also ai profiles)
+# TODO: me - Handle file exceptions
 class Config:
-    CONFIG_FILE_LOCATION = './data/config.yaml'
-
-    def __init__(self, constants: DataConstants):
-        self._defs = constants
-        self._data = _load_yaml(self.CONFIG_FILE_LOCATION)
-        self._dirs = Directories(**self._data['directories'])
+    _defs = Constants.load(pathlib.Path('data/constants.yaml'))
+    _prof = Profiles.load(pathlib.Path('data/config.yaml'))
 
     @property
-    def constants(self) -> DataConstants:
-        return self._defs
+    def supported_models(self) -> List[str]:
+        return list(self._prof.ai_profiles.keys())
 
     @property
-    def ai_profiles(self) -> Dict[str, any]:
-        return self._data['ai-profiles']
-
+    def prompt_dir(self) -> pathlib.Path:
+        return pathlib.Path('.', self._prof.directories.prompts)
+    
     @property
-    def ai_providers(self) -> Dict[str, any]:
-        return self._data['ai-providers']
-
+    def story_dir(self) -> pathlib.Path:
+        return pathlib.Path('.', self._prof.directories.story)
+    
     @property
-    def directories(self) -> Directories:
-        return self._dirs
+    def output_dir(self) -> pathlib.Path:
+        return pathlib.Path('.', self._prof.directories.output)
+    
+    def load_prompt(self, prompt: str) -> str:
+        return load_markdown(self.prompt_dir / f'{prompt}.md')
+    
+    def load_story(self, story: str) -> StoryDef:
+        return StoryDef.load(self.story_dir, story)
 
-    @property
-    def output_dir(self) -> str:
-        return self._dirs.output
-
-    # Helpers for loading data from prompt and story files
-    # TODO: me - Not sure if this is the best approach for
-    # development, just cause I won't be iterating there
-    def get_prompt_path(self, prompt: str) -> Path:
-        return Path('.', self.directories.prompts, f'{prompt}.md')
-
-    def load_prompt_file(self, prompt: str) -> str:
-        return _strip_comments(self.get_prompt_path(prompt).read_text(encoding='utf-8'))
-
-    def get_story_dir(self, story: str) -> Path:
-        return Path('.', self.directories.story, story)
-
-    def load_story(self, story: str) -> str:
-        base = self.get_story_dir(story)
-        with open(f'{base}/_story.yaml', 'r', encoding='utf-8') as f:
-            return StoryFile(story, base, yaml.safe_load(f))
-
-    def load_story_file(self, story: str, file: str) -> str:
-        return _strip_comments(Path(self.get_story_dir(story), f'{file}.md').read_text(encoding='utf-8'))
-        
     def load_schema(self, schema: str) -> Dict:
-        with open(f'./{self.directories.prompts}/{schema}.json', 'r', encoding='utf-8') as f:
+        with open(self.prompt_dir / f'{schema}.json', 'r', encoding='utf-8') as f:
             return json.load(f)
 
-
-
-def load_config(defaults: DataConstants) -> Config:
-    return Config(defaults)
+    def get_config_for_model(self, model: str) -> ApiIntegration:
+        profile = self._prof.ai_profiles[model]
+        config = self._defs.get_config_for_model(profile.model_name)
+        if self._defs.api_keys[config.api_key]:
+            os.environ[config.api_key] = self._defs.api_keys[config.api_key]
+        return config
+    
+    def get_config_for_profile(self, profile: str) -> ApiIntegration:
+        return self.get_config_for_model(profile)

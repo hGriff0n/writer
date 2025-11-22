@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from typing import Dict, List, Optional, Union, Tuple
 
-from .config2 import Config, ApiIntegration, ApiCosts
+from .config import Config, ApiIntegration, ApiCosts
 
 from langchain.chat_models import base, init_chat_model
 from langchain_core.messages.base import BaseMessage

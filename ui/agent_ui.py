@@ -1,8 +1,8 @@
 
 from dataclasses import dataclass
 
-from lib.config import init_model
-from lib.config import load_config
+from lib.config import Config
+from lib.ai import LlmEngine
 
 from rich.console import RenderableType
 from rich.markdown import Markdown
@@ -18,8 +18,8 @@ from textual.widgets import Footer, Input, OptionList, Placeholder, TextArea
 
 
 # Initialize chat app
-config = load_config()
-model = init_model(config, 'gemini')
+config = Config()
+model = LlmEngine(config, 'gemini')
 
 
 # Chat interface

@@ -3,7 +3,7 @@ import sys  # Allow this file to import like it was in the "main" folder
 sys.path.append(r'C:\Users\ghoop\Desktop\writer')
 
 from lib.ai import init_model
-from lib.config2 import Config
+from lib.config import Config
 
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 

@@ -5,11 +5,11 @@ sys.path.append(r'C:\Users\ghoop\Desktop\writer')
 import json
 
 from lib.ai import LlmEngine
-from lib.config import load_config, DataConstants
+from lib.config2 import Config
 
 from langchain_core.messages import AnyMessage, SystemMessage, HumanMessage
 
-config = load_config(DataConstants())
+config = Config()
 model = LlmEngine(config, 'gemini', 'edit/expander')
 
 with open(f'{config.output_dir}/stories.json', 'r', encoding='utf-8') as f:

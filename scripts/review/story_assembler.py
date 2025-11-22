@@ -5,12 +5,12 @@ sys.path.append(r'C:\Users\ghoop\Desktop\writer')
 import json
 import os
 
-from lib.ai import load_chat_log
-from lib.config import load_config, DataConstants
+from lib.ai import ChatLog
+from lib.config2 import Config
 from lib.util import extract_between_tags
 
 
-config = load_config(DataConstants())
+config = Config()
 
 # Simple script to take the last conversation and merge it into a single narrative. Appends to a list of stories in stories.json and then overwrites the book.txt file.
 
@@ -18,7 +18,7 @@ config = load_config(DataConstants())
 # This is basically the opposite of 'prompt_plus', dropping all human msgs
 story = []
 word_count = 0
-chat_log = load_chat_log(config.output_dir, 'data')
+chat_log = ChatLog.load(config.output_dir, 'data')
 for response in chat_log.having_role('AI'):
     story.append(extract_between_tags('prose', response['msg']))
     word_count += len(story[-1].split())

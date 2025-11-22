@@ -12,14 +12,6 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Integrate with Obsidian to simplify export even more
 - Create AI script for running prompt
 
-- gemini 3 pretty decent coherence, gen whole story
-  - overly sad and morose (should i add a bias towards enjoyment?)
-  - didn't gen enough characters
-    - include questions about population principles
-  - have to explicitly say "stop at moment" to prevent full gen
-    - how to decide when to split
-  - time seems to be a bit fluid
-
 # [PRIMARY] Migrate All Stories to New Approach
 - `curse`
   - [~] designdoc
@@ -61,13 +53,10 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
   - No i have to create my own agent discussion board
 
 # [TERTIARY] Experiment with other models?
+- Swap config.py for v2/config.py
+  - extract_from_draft: LlmEngine <- CONF
 - Update LlmEngine to auto-create rate limiters
-  - Update configs to new tier 1
-  - Update configs to Gemini
-  - Add configs for ChatGPT, etc.
-- Chat GPT 5.1 has good reviews
-- Kimi K2
-- Claude Sonnet
+- Allow for LlmEngine to produce different models depending on
 
 # Script Improvements
 - Change to pydata structure (gemini support actually week)
@@ -77,6 +66,12 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
 - Validate json schema against updated IR
   - Investigate reporting IR conversations in json, not pseudo-xml
 - Is there anyway to track the constants/config files?
+- Investigate using batching to run multiple stories at once
+- Investigate using file caching to optimize load times during story caching
+  - Upload components file at start
+  - Reference file in the prompt
+  - And then can run a lot of queries against the file
+  - Unload components file?
 
 # Integrate Skill Framework to Reduce Context Size (esp in Specfinding)
 - Implement agentic layer to dynamically load skill files

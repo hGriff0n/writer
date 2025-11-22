@@ -10,13 +10,14 @@ import regex as re
 from io import StringIO
 
 from lib.ai import LlmEngine
-from lib.config import Config, DataConstants, load_markdown
+from lib.config2 import Config
 from lib.context import ContextManager
+from lib.util import load_markdown
 
 ChatContext = List[AnyMessage]
 
 
-DEFS = DataConstants()
+CONF = Config()
 parser = ArgumentParser(
     prog='specfinding', description='story spec discussion')
 parser.add_argument('story')
@@ -24,7 +25,7 @@ parser.add_argument('-i', '--input', type=str, action='append')
 parser.add_argument('-r', '--review_all', action='store_true')
 parser.add_argument('-e', '--extract_essay', action='store_true')
 parser.add_argument('-m', '--profile',
-                    choices=LlmEngine.supported_models(),
+                    choices=CONF.supported_models,
                     default=LlmEngine.DEFAULT_MODEL)
 # Skip the specfinding conversation and start with styler_gen.md
 parser.add_argument('-s', '--scene_scripting', action='store_true')
@@ -33,8 +34,7 @@ parser.add_argument('-o', '--orchestration', action='store_false', default=True)
 
 # Initialize chat app
 args = parser.parse_args()
-config = Config(DEFS)
-story = config.load_story(args.story)
+story = CONF.load_story(args.story)
 
 
 # Launch script for extracting a proto specsheet from a narrative essay
@@ -96,7 +96,7 @@ def add_updates_to_living_doc(resp: str):
 
 def assemble_snapshot() -> str:
     doc = StringIO()
-    for key, aspects in living_document:
+    for key, aspects in living_document.items():
         doc.write(f'### {' '.join(k.capitalize() for k in key.split('_'))}')
         for component in aspects:
             doc.write('\n\n')
@@ -177,7 +177,7 @@ def send_message_orc(llm: LlmEngine, msg: str, messages: ChatContext) -> Dict:
 
 def load_input_spec() -> str:
     return '\n\n'.join(
-        load_markdown(f'./{input_file}') if input_file else "" for input_file in args.input
+        load_markdown(f'./{input_file}') if input_file else "" for input_file in (args.input or [])
     )
 
 
@@ -200,10 +200,10 @@ if args.orchestration:
     # NOTE: The orchestrator doesn't have any templates **yet**
     # TODO: me - Still want to make this use skills, but doesn't seem possible for now
     p = PromptTemplate.from_template(
-        config.load_prompt_file('specfinding/orchestrator'))
+        CONF.load_prompt('specfinding/orchestrator'))
 
     # Initialize the conversation agent
-    llm = LlmEngine(config, args.profile, prompt=p.format(), temperature=0.8)
+    llm = LlmEngine(CONF, args.profile, prompt=p.format())
 
     print('starting orchestration repl')
     try:
@@ -220,7 +220,7 @@ if args.orchestration:
     except Exception as e:
         print(f'[ERROR]: {e}')
 
-    llm.chat_log.save(config.output_dir)
+    llm.chat_log.save(CONF.output_dir)
     input_spec += assemble_snapshot()
 
 
@@ -245,16 +245,16 @@ REPL_SCEN: Dict[str, Callable[[LlmEngine, str, ContextManager], Dict]] = {
     '/reset': flush_and_restart_scen,
 }
 
-def run_repl_loop(config: Config, args: Namespace, input_spec: str, prompt_file: str, temperature: float) -> str:
+def run_repl_loop(config: Config, args: Namespace, input_spec: str, prompt_file: str) -> str:
     # If the input spec isn't set, assume it's the input file
     if not input_spec:
         input_spec = load_input_spec()
 
     # TODO: Convert the config class to returning filepath
-    p = PromptTemplate.from_template(config.load_prompt_file(prompt_file))
+    p = PromptTemplate.from_template(config.load_prompt(prompt_file))
 
     # Initialize the conversation agent
-    llm = LlmEngine(config, args.profile, prompt=p.format(), temperature=temperature)
+    llm = LlmEngine(config, args.profile, prompt=p.format())
 
     # Prepare the living document and bookmark handler
     c = ContextManager()
@@ -280,8 +280,8 @@ if args.scene_scripting:
     # First: https://aistudio.google.com/app/prompts/1rEbum4Q106PAQOufW9LGb0r0eJZq4KzP
     # Later: https://aistudio.google.com/app/prompts/1W6ztSXtfxrPdUQn5S-tWOSiiX6fEhx1w
     print('starting scene assembly repl')
-    input_spec = run_repl_loop(config, args, input_spec, prompt_file='specfinding/scenegen', temperature=0.8)
+    input_spec = run_repl_loop(CONF, args, input_spec, prompt_file='specfinding/scenegen')
 
 if args.writer:
     print('starting writer styling repl')
-    input_spec = run_repl_loop(config, args, input_spec, prompt_file='specfinding/writerstyle', temperature=1.3)
+    input_spec = run_repl_loop(CONF, args, input_spec, prompt_file='specfinding/writerstyle')

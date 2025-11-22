@@ -3,12 +3,12 @@ import sys  # Allow this file to import like it was in the "main" folder
 sys.path.append(r'C:\Users\ghoop\Desktop\writer')
 
 from lib.ai import init_model
-from lib.config import load_config, DataConstants
+from lib.config2 import Config
 
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 
 # Initialize chat app
-config = load_config(DataConstants())
+config = Config()
 model = init_model(config, 'gemini') # 'openai'
 # https://www.philschmid.de/gemini-langchain-cheatsheet#google-gemini-with-langchain-chat-models
 
@@ -31,11 +31,11 @@ model = init_model(config, 'gemini') # 'openai'
 # librarian is specifically instructed to never answer a question unless it
 # knows the answer, although there is a separate mode for extrapolations.
 # 
-WORLD_GENERATOR_PROMPT = config.load_prompt_file('world/world_generator')
+WORLD_GENERATOR_PROMPT = config.load_prompt('world/world_generator')
 
 # NOTE: There is no way for me to update the world state from this situation
 # https://langchain-ai.github.io/langgraph/agents/context/ would be useful here
-WORLD_LIBRARIAN_PROMPT = config.load_prompt_file('world/world_librarian')
+WORLD_LIBRARIAN_PROMPT = config.load_prompt('world/world_librarian')
 
 # 
 # Although not currently used in this script, the plot generator was the
@@ -63,7 +63,7 @@ WORLD_LIBRARIAN_PROMPT = config.load_prompt_file('world/world_librarian')
 # resumed eventually, as the agent organization I've developed so far is
 # well placed in the long run.
 # 
-PLOT_GENERATOR = config.load_prompt_file('experiments/plot_generator')
+PLOT_GENERATOR = config.load_prompt('experiments/plot_generator')
 
 # 
 # Send the initial generation request

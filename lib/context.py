@@ -1,5 +1,5 @@
 
-from typing import Dict, Set, List, Callable
+from typing import Dict, Set, List
 import regex as re
 from io import StringIO
 

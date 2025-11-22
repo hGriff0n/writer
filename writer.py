@@ -3,22 +3,23 @@ from argparse import ArgumentParser
 import json
 from typing import Dict, List, Tuple
 from deepmerge import always_merger
+import pathlib
 
 from lib.ai import LlmEngine
-from lib.config import load_config, DataConstants
+from lib.config2 import Config
 
 from langchain_core.messages import AnyMessage, AIMessage, SystemMessage, HumanMessage
 from langchain_core.prompts import PromptTemplate
 from langchain_core.rate_limiters import InMemoryRateLimiter
 
 
-DEFS = DataConstants()
+CONF = Config()
 
 # TODO: me - Rearchitect these arguments so that they are fully customizable
 parser = ArgumentParser(prog='simple_writer', description='simple ai writer')
 parser.add_argument('story')
 parser.add_argument('-m', '--profile',
-                    choices=LlmEngine.supported_models(),
+                    choices=CONF.supported_models,
                     default=LlmEngine.DEFAULT_MODEL)
 parser.add_argument('-p', '--prompt',
                     choices=['simple_writer'], default='simple_writer')
@@ -28,8 +29,7 @@ parser.add_argument('-r', '--runs', type=int, default=0)
 
 # Initialize chat app
 args = parser.parse_args()
-config = load_config(DEFS)
-story = config.load_story(args.story)
+story = CONF.load_story(args.story)
 if args.story != 'late':
     raise Exception("Only 'late' and 'curse' stories are currently supported")
 
@@ -42,11 +42,8 @@ if args.story != 'late':
 
 # Assemble the prompt from a generic template
 # This uses a mix of `{template}` and xml tags
-p = PromptTemplate.from_template(
-    config.load_prompt_file('architect'))
-arch_prompt = p.format(
-    story_arch=story.story_arch
-)
+p = PromptTemplate.from_template(CONF.load_prompt('architect'))
+arch_prompt = p.format(story_arch=story.story_arch)
 
 # The architect is a multi-purpose agent dealing with all things about plot
 # direction. There are basically 3 modes: planning, options, and
@@ -63,12 +60,11 @@ arch_prompt = p.format(
 #     max_bucket_size=5,
 # )
 
-spec = config.load_schema('spec')
+spec = CONF.load_schema('spec')
 architect = LlmEngine(
-    config,
+    CONF,
     args.profile,
     prompt=arch_prompt,
-    temperature=1,
     schema=spec
 )
 
@@ -85,10 +81,9 @@ architect = LlmEngine(
 #     max_bucket_size=5,
 # )
 writer = LlmEngine(
-    config,
+    CONF,
     args.profile,
-    prompt=story.writer,
-    temperature=1
+    prompt=story.writer
 )
 
 
@@ -153,15 +148,15 @@ def ask_for_ideas(context: Context) -> Tuple[List[str], List[str]]:
     options = resp['plan_or_options']
     return summarize_plot_beats(options), options
 
-def save_file_path(config, story) -> str:
-    return f'./{config.directories.story}/{story.title}/resume.json'
+def save_file_path(config: Config, story: str) -> str:
+    return config.story_dir / story / 'resume.json'
 
 
 # TODO: me - this might need context compaction
 # Allow for resuming an in-progress story
 if args.resume:
     print("Loading in-progress story...")
-    with open(save_file_path(config, story), 'r', encoding='utf-8') as f:
+    with open(save_file_path(CONF, story), 'r', encoding='utf-8') as f:
         state = json.load(f)
 
     print("Restoring prior context...")
@@ -318,8 +313,8 @@ else:
 # Store the conversation in a per-run file so we can easily send it to
 # other prompts for improvements/etc.
 print(f'Cost of Run: {writer.est_cost() + architect.est_cost()}')
-chat_file = writer.chat_log.save(config.output_dir)
-arch_file = architect.chat_log.save(config.output_dir)
+chat_file = writer.chat_log.save(CONF.output_dir)
+arch_file = architect.chat_log.save(CONF.output_dir)
 
 
 # Save the current state of generation in a temp file in the story directory
@@ -335,5 +330,5 @@ savefile = {
     }
 }
 
-with open(save_file_path(config, story), 'w', encoding='utf-8') as f:
+with open(save_file_path(CONF, story), 'w', encoding='utf-8') as f:
     json.dump(savefile, f, ensure_ascii=False, indent=4)

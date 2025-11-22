@@ -8,14 +8,15 @@ import regex as re
 
 from lib.ai import LlmEngine
 from lib.config import load_config, DataConstants, load_markdown
+from lib.config2 import Config
 from langchain_core.prompts import PromptTemplate
 
 
-DEFS = DataConstants()
+CONF = Config()
 parser = ArgumentParser(prog='specfinding', description='story spec discussion')
 parser.add_argument('story')
 parser.add_argument('-m', '--profile',
-                    choices=LlmEngine.supported_models(),
+                    choices=CONF.supported_models,
                     default=LlmEngine.DEFAULT_MODEL)
 parser.add_argument('-o', '--out', default='.tmp/spec.md', type=str)
 parser.add_argument('-f', '--file', type=str)
@@ -23,12 +24,11 @@ parser.add_argument('-f', '--file', type=str)
 
 # Initialize chat app
 args = parser.parse_args()
-config = load_config(DEFS)
-story = config.load_story(args.story)
+story = CONF.load_story(args.story)
 
 
 # Initialize the model
-llm = LlmEngine(config, args.profile, prompt=story.writer, temperature=0.8)
+llm = LlmEngine(CONF, args.profile, prompt=story.writer)
 
 
 # Update with assembled doc after every "step"
@@ -39,7 +39,7 @@ if not document:
 
 # Load up the ingest script, pre-filling out the essay we are analyzing
 # Then format the first iteration with an empty living spec (since we haven't extracted yet)
-system_prompt = PromptTemplate.from_template(config.load_prompt_file('specfinding/ingest'), partial_variables={'document': document})
+system_prompt = PromptTemplate.from_template(CONF.load_prompt('specfinding/ingest'), partial_variables={'document': document})
 initial = system_prompt.format(living_spec="")
 
 # Prepare the user query that we will repeatedly run to extract all possible components

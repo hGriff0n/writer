@@ -10,7 +10,6 @@ from lib.config import Config
 
 from langchain_core.messages import AnyMessage, AIMessage, SystemMessage, HumanMessage
 from langchain_core.prompts import PromptTemplate
-from langchain_core.rate_limiters import InMemoryRateLimiter
 
 
 CONF = Config()
@@ -53,13 +52,6 @@ arch_prompt = p.format(story_arch=story.story_arch)
 # writer can use for generation. The user can also query the ai for some
 # options, which will provide `3` different ways for progressing the story
 # Gemma is not as capable at following the instructions
-# https://ai.google.dev/gemini-api/docs/rate-limits
-# pro_limiter = InMemoryRateLimiter(
-#     requests_per_second=2 / 60,  # 5 RPM for 2.5pro (so the docs say)
-#     check_every_n_seconds=0.1,  # Wake up every 100 ms
-#     max_bucket_size=5,
-# )
-
 spec = CONF.load_schema('spec')
 architect = LlmEngine(
     CONF,
@@ -75,11 +67,7 @@ architect = LlmEngine(
 # Finetunes??? https://huggingface.co/ToastyPigeon/Gemma-3-Starshine-12B
 # Or other models: https://eqbench.com/creative_writing.html (Kimi)
 # Or Gemma 2: https://huggingface.co/lemon07r/Gemma-2-Ataraxy-9B
-# flash_limiter = InMemoryRateLimiter(
-#     requests_per_second=10 / 60,  # 10 RPM for 2.5flash
-#     check_every_n_seconds=0.1,    # Wake up every 100 ms
-#     max_bucket_size=5,
-# )
+# sam-paech/gemma-3-27b-it-antislop
 writer = LlmEngine(
     CONF,
     args.profile,

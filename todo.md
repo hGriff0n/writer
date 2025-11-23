@@ -53,10 +53,8 @@ https://infiniteworlds.mywikis.wiki/wiki/How_Infinite_Worlds_works
   - No i have to create my own agent discussion board
 
 # [TERTIARY] Experiment with other models?
-- Swap config.py for v2/config.py
-  - extract_from_draft: LlmEngine <- CONF
-- Update LlmEngine to auto-create rate limiters
-- Allow for LlmEngine to produce different models depending on
+- Allow for LlmEngine to produce different models instead of just using "generics"
+  - This is the intent of the provider, but I don't know what kimi uses
 
 # Script Improvements
 - Change to pydata structure (gemini support actually week)

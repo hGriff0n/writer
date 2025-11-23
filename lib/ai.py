@@ -2,9 +2,9 @@
 from dataclasses import asdict, dataclass
 from datetime import datetime
 import json
-import os
 from pathlib import Path
-from typing import Dict, List, Optional, Union, Tuple
+from typing import Dict, List, Union, Tuple
+from langchain_core.rate_limiters import InMemoryRateLimiter
 
 from .config import Config, ApiIntegration, ApiCosts
 
@@ -103,9 +103,17 @@ class LlmEngine:
         if not self._model:
             raise Exception(f'Attempt to load unsupported profile: {profile}')
         
+        # Add a rate-limiter if the model has configured limits
+        if self._model.rate_limits:
+            self._rate_limiter = InMemoryRateLimiter(
+                requests_per_second=self._model.rate_limits.rpm / 60,
+                check_every_n_seconds=0.5,  # Wake up every 500 ms
+                max_bucket_size=10,
+            )
+        
         self._log = ChatLog(template=self._prompt, conversation=[])
         self._usage = UsageTracker(self._model)
-        self._llm = init_chat_model(self._model.name, model_provider=self._model.provider)
+        self._llm = init_chat_model(self._model.name, model_provider=self._model.provider, rate_limiter=self._rate_limiter)
 
         self._structured = schema is not None
         if self._structured:

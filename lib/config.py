@@ -13,7 +13,7 @@ class ApiProvider(str, Enum):
     google = 'google_genai'
     openai = 'openai'
     anthropic = 'anthropic'
-    moonshot = 'moonshot'  # Not sure what Kimiv2 connection is
+    moonshot = 'moonshot'  # Kimi doesn't seem to have a provider? it's a community plugin
     local = 'local'
 
 class ApiCosts(BaseModel):
@@ -51,7 +51,7 @@ class Constants(BaseModel):
 
 class ApiProfile(BaseModel):
     model_name: str
-    provider: ApiProvider
+    provider: Optional[ApiProvider] = Field(default=None)
     url: Optional[str] = Field(default=None)
 
 class DirectoryMap(BaseModel):

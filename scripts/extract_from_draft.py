@@ -8,6 +8,7 @@ import regex as re
 
 from lib.ai import LlmEngine
 from lib.config import Config
+from lib.util import load_markdown
 from langchain_core.prompts import PromptTemplate
 
 
@@ -58,8 +59,10 @@ If you are unable to find any new components, you must return immediately and on
 # only gotten good outputs consistently for `World Codex` and `Core Concepts` - anything
 # else is hit-or-miss at best. Most things are actually worse and would take far more time
 # and effort in the specfinding phase to undo wrong guesses than we save
+EXEC_SUMMARY = 'Executive Summary'
 components = [
-    'World Codex',
+    EXEC_SUMMARY,
+    'World Codex',  # this has to go first or it starts interpreting nonsense
     'Core Concepts',
     'Narrative Engines',
     # 'Beat Generation Rules'
@@ -72,7 +75,7 @@ for c in components:
     added_content = []
     messages = [SystemMessage(system_prompt.format(living_spec=living_spec))]
     resp, usage = llm.invoke(question.format(header=first, component=c), messages)
-    for i in range(0, 5):
+    for i in range(0, 5 if c != EXEC_SUMMARY else 1):
         # Handle the break
         if resp == "[[STOP]]": break
         # Don't report engine fluff
@@ -81,7 +84,7 @@ for c in components:
             exit()
         added_content.append(m.group(1))
         # And repeat until done
-        print(f'Making followup query for `{c}: {i} out of 5')
+        print(f'Making followup query for `{c}: {i} out of max 5')
         resp, usage = llm.invoke(question.format(header='', component=c), messages)
     
     # We've done all we can so add the established information to the doc

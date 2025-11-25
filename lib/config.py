@@ -79,7 +79,7 @@ class StoryDef(BaseModel):
     @staticmethod
     def load(path: pathlib.Path, story: str) -> StoryDef:
         s = parse_yaml_file_as(StoryDef, path / story / '_story.yaml')
-        s.path = path
+        s.path = path / story
         return s
     
     def load_file(self, file: str):

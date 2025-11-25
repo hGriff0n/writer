@@ -32,7 +32,7 @@ llm = LlmEngine(CONF, args.profile, prompt=story.writer)
 
 
 # Update with assembled doc after every "step"
-document = story.fullspec if not args.file else load_markdown(args.file)
+document = load_markdown((story.path / f'{story.fullspec}.md') if not args.file else args.file)
 if not document:
     print('No input in essay file. Exiting immediately')
     exit()
@@ -61,21 +61,21 @@ If you are unable to find any new components, you must return immediately and on
 # and effort in the specfinding phase to undo wrong guesses than we save
 EXEC_SUMMARY = 'Executive Summary'
 components = [
-    EXEC_SUMMARY,
-    'World Codex',  # this has to go first or it starts interpreting nonsense
-    'Core Concepts',
-    'Narrative Engines',
-    # 'Beat Generation Rules'
+    (EXEC_SUMMARY, 1),
+    ('Core Concepts', 5),
+    ('World Codex', 5) # this has to go first or it starts interpreting nonsense
+    ('Narrative Engines', 2)
+    # ('Beat Generation Rules', 5)
 ]
 living_spec = ""
 extract_md = re.compile(r"###.+\n((?s).+)")
 
-for c in components:
+for c, max in components:
     print(f'Now processing spec initialization queries for {c}')
     added_content = []
     messages = [SystemMessage(system_prompt.format(living_spec=living_spec))]
     resp, usage = llm.invoke(question.format(header=first, component=c), messages)
-    for i in range(0, 5 if c != EXEC_SUMMARY else 1):
+    for i in range(0, max):
         # Handle the break
         if resp == "[[STOP]]": break
         # Don't report engine fluff
@@ -84,7 +84,7 @@ for c in components:
             exit()
         added_content.append(m.group(1))
         # And repeat until done
-        print(f'Making followup query for `{c}: {i} out of max 5')
+        print(f'Making followup query for `{c}: {i+1} out of max {max}')
         resp, usage = llm.invoke(question.format(header='', component=c), messages)
     
     # We've done all we can so add the established information to the doc
